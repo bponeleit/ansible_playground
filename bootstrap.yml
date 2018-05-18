@@ -1,4 +1,4 @@
-- hosts: all
+- hosts: pi
   become: true
 
   roles:
@@ -6,7 +6,7 @@
 
   vars:
     ansible_user: "pi"
-    ansible_ssh_private_key_file: "/.ssh/id_rsa"
+    ansible_ssh_private_key_file: "~/.ssh/id_rsa"
     dbs_ssh_pubkey: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
 
     dbs_set_hostname: true

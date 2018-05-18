@@ -1,0 +1,15 @@
+---
+- name: Install wiringPi
+  package:
+    name: "wiringpi"
+    state: latest
+
+- name: Checkout RPi_Utils
+  git:
+    repo: https://github.com/ninjablocks/433Utils.git
+    dest: /home/pi
+
+- name: Build RPi_Util
+  make:
+    chdir: /home/pi/433Utils/RPi_Utils
+    target: all
