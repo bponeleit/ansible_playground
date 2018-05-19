@@ -35,3 +35,11 @@
     - name: "password"
       prompt: "Enter new password for user pi"
       private: yes
+      
+- import_playbook: onewire.yml
+
+- hosts: rf433
+  become: true
+  
+  roles:
+    - rf433
