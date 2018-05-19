@@ -1,0 +1,15 @@
+---
+- name: Install git
+  package:
+    name: "git-core"
+    state: latest
+
+- name: Checkout RPi_Utils
+  git:
+    repo: https://github.com/ninjablocks/433Utils.git
+    dest: /home/pi/433Utils
+
+- name: Build RPi_Util
+  make:
+    chdir: ~/433Utils/RPi_utils
+    target: all
