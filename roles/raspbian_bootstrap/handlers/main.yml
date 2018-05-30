@@ -1,0 +1,8 @@
+- name: locale-gen
+  command: locale-gen
+
+- name: update tzdata
+  command: dpkg-reconfigure -f noninteractive tzdata
+
+- name: restart cron
+  service: name=cron state=restarted

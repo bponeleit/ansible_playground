@@ -14,9 +14,9 @@
     dbs_set_timezone: true
     dbs_set_ntp: true
     dbs_hostname: "{{ inventory_hostname }}"
-    dbs_default_locale: "en_US.UTF-8"
+    dbs_default_locale: "de_DE.UTF-8"
     dbs_locales:
-      - "en_US.UTF-8"
+      - "de_DE.UTF-8"
     dbs_timezone: "Europe/Berlin"
 
     dbs_ntp_hosts:
@@ -43,3 +43,9 @@
   
   roles:
     - rf433
+
+- hosts: camera
+  become: true
+
+  roles:
+    - camera

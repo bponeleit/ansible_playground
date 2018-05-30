@@ -12,9 +12,9 @@ dbs_repo_old: "{% if ansible_local | d() and ansible_local.apt_sources | d() and
 # -------------------------
 dbs_hostname: 'debian-boostrap.local'
 dbs_locales:
-  - 'en_US.UTF-8'
-dbs_default_locale: 'en_US.UTF-8'
-dbs_timezone: 'Europe/Paris'
+  - 'en_GB.UTF-8'
+dbs_default_locale: 'en_GB.UTF-8'
+dbs_timezone: 'Europe/Berlin'
 dbs_use_systemd: false
 dbs_use_unbound: false
 dbs_use_dotfiles: true

@@ -1,0 +1,11 @@
+- hosts: camera
+  become: true
+
+  roles:
+    - camera
+    - infothrill.rpi-boot-config
+
+  vars:
+    boot_config:
+        start_x: 1
+        gpu_mem: 128

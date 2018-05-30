@@ -1,8 +1,18 @@
 ---
 - name: INCLUDE | Manage system users
   include_tasks: user.yml
+
+- name: INCLUDE | Set locale
+  include_tasks: locales.yml
+
+- name: HOSTNAME
+  hostname:
+    name: "{{ inventory_hostname }}"
   
 - name: Install wiringPi
   package:
     name: "wiringpi"
     state: latest
+
+- name: INCLUDE | Timezone
+  include_tasks: timezone.yml

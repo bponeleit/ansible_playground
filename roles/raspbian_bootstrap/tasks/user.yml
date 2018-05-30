@@ -22,6 +22,7 @@
   authorized_key: user=pi key="{{ dbs_ssh_pubkey }}"
   when: dbs_ssh_pubkey is defined
 
+
 #- name: TEMPLATE | Create sudoers file
 #  template: >
 #    src=etc/sudoers.d/ansible.j2

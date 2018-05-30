@@ -11,5 +11,5 @@
 
 - name: Build RPi_Util
   make:
-    chdir: ~/433Utils/RPi_utils
+    chdir: /home/pi/433Utils/RPi_utils
     target: all
