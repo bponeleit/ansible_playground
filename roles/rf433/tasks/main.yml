@@ -1,4 +1,17 @@
 ---
+# - name: Enable lirc device tree overlay
+#   lineinfile:
+#     dest: "/boot/config.txt"
+#     line: "dtoverlay=lirc-rpi"
+#   register: dtoverlay
+
+- name: restart machine
+  shell: reboot
+  async: 1
+  poll: 0
+  ignore_errors: true
+  when: dtoverlay.changed
+
 - name: Install git
   package:
     name: "git-core"
@@ -13,3 +26,14 @@
   make:
     chdir: /home/pi/433Utils/RPi_utils
     target: all
+
+# - name: Install LIRC
+#   package:
+#     name: "lirc"
+#     state: "latest"
+
+# - name: Deploy lircrc
+#   template: src=etc/lirc/lircrc.j2 dest=/etc/lirc/lircrc
+
+# - name: Deploy lircd.conf
+#   template: src=etc/lirc/lircd.conf.j2 dest=/etc/lirc/lircd.conf.d/lamps.lircd.conf
