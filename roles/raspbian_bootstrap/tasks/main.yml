@@ -16,3 +16,6 @@
 
 - name: INCLUDE | Timezone
   include_tasks: timezone.yml
+
+- name: INCLUDE | reconnect.sh
+  include_tasks:  reconnect.yml

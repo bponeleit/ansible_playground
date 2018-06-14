@@ -1,0 +1,14 @@
+---
+
+- name: DIRECTORY | usr local misc
+  file: path=/usr/local/misc/ state=directory
+
+- name: TEMPLATE | Deploy reconnect.sh
+  template: src=usr/local/misc/reconnect.j2 dest=/usr/local/misc/reconnect.sh
+
+- name: CRON | start reconnect at reboot
+  cron:
+    name: "Reconnect Wifi"
+    user: root
+    reboot: True
+    job: "/bin/bash /usr/local/misc/reconnect.sh &"

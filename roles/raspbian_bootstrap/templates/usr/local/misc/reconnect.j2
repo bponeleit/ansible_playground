@@ -1,0 +1,23 @@
+#!/bin/bash
+MYCOUNT=0;
+while true ; do
+   if ifconfig wlan0 | grep -q "192.168.1";  then
+        #logger "Network connection up";
+        MYCOUNT=0;
+        #logger "MyCount: $MYCOUNT";
+    sleep 60
+   else
+      if [ $MYCOUNT -gt 30 ] ; then
+          logger "Attempting shutdown"
+          /sbin/shutdown -r now
+      fi
+      MYCOUNT=$((MYCOUNT + 1))
+      logger "Network connection down! Attempting reconnection."
+      logger "MyCount: $MYCOUNT"
+      ifdown --force wlan0
+      sleep 10
+      ifup --force wlan0
+      sleep 10
+      service ssh restart
+    fi
+done
