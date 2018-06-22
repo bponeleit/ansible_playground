@@ -1,10 +1,10 @@
 ---
-- name: restart machine
-  shell: reboot
-  async: 1
-  poll: 0
-  ignore_errors: true
-  when: dtoverlay.changed
+#- name: restart machine
+#  shell: reboot
+#  async: 1
+#  poll: 0
+#  ignore_errors: true
+#  when: dtoverlay.changed
 
 - name: Install git
   package:
