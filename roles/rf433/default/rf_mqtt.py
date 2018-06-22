@@ -2,6 +2,7 @@ import paho.mqtt.client as mqttClient
 import time
 import json
 import subprocess
+import sys
 
 from pprint import pprint
 
@@ -34,21 +35,29 @@ def on_connect(client, userdata, flags, rc):
         print("Connection failed")
 
 def on_message(client, userdata, message):
+    sys.stdout.write("Message received: "  + message.topic[23:] + '/' + message.payload + '\n')
+    sys.stdout.flush()
     print "Message received: "  + message.topic[23:] + '/' + message.payload 
     system, device = message.topic[23:].split('/')
     command = commands.get(message.payload)
     system = format(int(system), '005b')
     device = devices.get(device)
+    sys.stdout.write('/home/pi/433Utils/RPi_utils/send ' + system + ' ' + device + ' ' + str(command) + '\n')
+    sys.stdout.flush()
     print '/home/pi/433Utils/RPi_utils/send ' + system + ' ' + device + ' ' + str(command) 
     subprocess.call(['/home/pi/433Utils/RPi_utils/send', system, device, str(command)])
 
 def on_intertechno_message(client, userdata, message):
-    print "Intertechno: " + message.topic[23:] + '/' + message.payload 
+    sys.stdout.write("Intertechno: " + message.topic[23:] + '/' + message.payload + '\n')
+    sys.stdout.flush()
+    # print "Intertechno: " + message.topic[23:] + '/' + message.payload 
     group, device = message.topic[23:].split('/')
     code = int(data.get(group).get(device))
     command = commands.get(message.payload)
     code += int(command)
-    print '/home/pi/433Utils/RPi_utils/codesend ' + str(code)
+    sys.stdout.write('/home/pi/433Utils/RPi_utils/codesend ' + str(code) + '\n')
+    sys.stdout.flush()
+    # print '/home/pi/433Utils/RPi_utils/codesend ' + str(code)
     subprocess.call(['/home/pi/433Utils/RPi_utils/codesend', str(code)])
 
 Connected = False   #global variable for the state of the connection
