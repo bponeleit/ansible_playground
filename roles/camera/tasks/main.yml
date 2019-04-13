@@ -4,15 +4,25 @@
     name: "rclone"
     state: latest
 
-- name: Background ratio
-    sysctl:
-        name: vm.dirty_background_ratio
-        value: 5
-        state: present
+- name: Install watchdog
+  package:
+    name: watchdog
+    state: latest
 
-- name: Dirty ratio
-    sysctl:
-        name: vm.dirty_ratio
-        value: 10
-        state: present
+#- name: Background ratio
+#    sysctl:
+#        name: vm.dirty_background_ratio
+#        value: 5
+#        state: present
+
+#- name: Dirty ratio
+#    sysctl:
+#        name: vm.dirty_ratio
+#        value: 10
+#        state: present
+
+# - name: CRON | 
+#   cron:
+#     name: "Reconnect Wifi"
+#     user: root
 

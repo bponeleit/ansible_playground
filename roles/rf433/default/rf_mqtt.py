@@ -56,7 +56,7 @@ def on_intertechno_message(client, userdata, message):
     command = commands.get(message.payload)
     code += int(command)
     sys.stdout.write('/home/pi/433Utils/RPi_utils/codesend ' + str(code) + '\n')
-    sys.stdout.flush()
+    sys.stdout.flush()  
     # print '/home/pi/433Utils/RPi_utils/codesend ' + str(code)
     subprocess.call(['/home/pi/433Utils/RPi_utils/codesend', str(code)])
 

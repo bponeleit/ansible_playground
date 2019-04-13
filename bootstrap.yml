@@ -49,3 +49,9 @@
 
   roles:
     - camera
+
+- hosts: pihole
+  become: true
+
+  roles:
+    - pihole
