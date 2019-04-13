@@ -6,7 +6,7 @@
     dest: /home/pi/Pi-Hole
 
 - name: Install Pi-Hole
-  command: basic-install.sh
+  shell: ./basic-install.sh >> install.log
   args: 
-      chdir: /home/pi/Pi-Hole/automated install
+      chdir: '/home/pi/Pi-Hole/automated install'
 
