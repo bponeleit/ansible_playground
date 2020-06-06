@@ -1,4 +1,8 @@
 
 *.retry
-
+*.pyc
 hosts
+*.sublime-project
+*.sublime-workspace
+.pymodhis
+.DS_Store
