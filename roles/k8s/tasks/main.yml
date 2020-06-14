@@ -1,0 +1,14 @@
+---
+- name: Ensure cgroupDriver is systemd
+  lineinfile:
+    path: /var/lib/kubelet/config.yaml
+    regexp: '^cgroupDriver.*'
+    line: 'cgroupDriver: systemd'
+  register: cgroup_driver
+
+- name: restart service kubelet also issue daemon-reload to pick up config changes
+  systemd:
+    state: restarted
+    daemon_reload: yes
+    name: kubelet
+  when: cgroup_driver is changed
