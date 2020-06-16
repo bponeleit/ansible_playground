@@ -1,0 +1,42 @@
+---
+- name: Create mountable dir
+  file: path=/volumes state=directory mode=777 owner=root group=root
+
+- name: Ensure NFS utilities are installed.
+  apt:  
+    state: present 
+    update_cache: yes 
+    name: ['nfs-common', 'nfs-kernel-server']
+
+- name: copy /etc/exports
+  template: src=exports.j2 dest=/etc/exports owner=root group=root
+
+- name: restart nfs server
+  service: name=nfs-kernel-server state=restarted
+
+- name: Checkout nfs-provisioning
+  git:
+    repo: https://github.com/bponeleit/nfs-provisioning.git
+    dest: nfs-provisioning
+
+- name: Set nfs-server ip in deployment for provisioner
+  replace:
+    path: nfs-provisioning/deployment.yaml
+    regexp: '<<NFS Server IP>>'
+    replace: '{{ ansible_default_ipv4.address }}'
+  register: nfs_ip
+
+- name: Create a service account and role binding from a local file
+  shell: kubectl create -f nfs-provisioning/rbac.yaml >> rbac.log
+  args:
+   creates: rbac.log
+
+- name: Create a storage class from a local file
+  shell: kubectl create -f nfs-provisioning/class.yaml >> storageclass.log
+  args:
+   creates: storageclass.log
+
+- name: Create deployment 
+  shell: kubectl create -f nfs-provisioning/deployment.yaml >> nfs_deployment.log
+  args:
+   creates: nfs_deployment.log

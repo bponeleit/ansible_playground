@@ -20,3 +20,5 @@
     chdir: $HOME
     creates: taint.log
 
+- name: INCLUDE | create NFS share
+  include_tasks: nfs.yml
