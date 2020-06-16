@@ -12,3 +12,11 @@
     daemon_reload: yes
     name: kubelet
   when: cgroup_driver is changed
+
+#Untaint master, so it will be available as worker node
+- name: Untaint master node
+  shell: kubectl taint nodes --all node-role.kubernetes.io/master- >> taint.log
+  args:
+    chdir: $HOME
+    creates: taint.log
+
