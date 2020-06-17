@@ -14,10 +14,15 @@
 - name: restart nfs server
   service: name=nfs-kernel-server state=restarted
 
+- name: check for folder
+  stat: path=nfs-provisioning
+  register: nfs_provisioning
+
 - name: Checkout nfs-provisioning
   git:
     repo: https://github.com/bponeleit/nfs-provisioning.git
     dest: nfs-provisioning
+  when: not nfs_provisioning
 
 - name: Set nfs-server ip in deployment for provisioner
   replace:
