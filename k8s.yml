@@ -4,4 +4,9 @@
   roles:
    - k8s
 
+- hosts: influxdb
+  become: true
+
+  roles:
+    - influxdb
 

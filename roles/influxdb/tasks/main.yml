@@ -1,0 +1,13 @@
+---
+- name: Copy Deployment file
+  copy:
+    src: templates/influxdb.yml
+    dest: influxdb.yml
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f influxdb.yml >> influxdb_setup.log
+  args:
+   creates: influxdb_setup.log
+
+- name: Portforward to local host
+  shell: kubectl port-forward -n influxdb service/influxdb 9999:9999

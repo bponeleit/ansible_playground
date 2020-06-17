@@ -1,0 +1,50 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    labels:
+        app: influxdb
+    name: influxdb
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: influxdb
+    serviceName: influxdb
+    template:
+        metadata:
+            labels:
+                app: influxdb
+        spec:
+            containers:
+              - image: quay.io/influxdb/influxdb:2.0.0-beta
+                name: influxdb
+                ports:
+                  - containerPort: 9999
+                    name: influxdb
+                volumeMounts:
+                  - mountPath: /root/.influxdbv2
+                    name: data
+    volumeClaimTemplates:
+      - metadata:
+            name: data
+        spec:
+            storageClassName: managed-nfs-storage
+            accessModes:
+              - ReadWriteOnce
+            resources:
+                requests:
+                    storage: 10G
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: influxdb
+spec:
+    ports:
+      - name: influxdb
+        port: 9999
+        targetPort: 9999
+    selector:
+        app: influxdb
+    type: ClusterIP
