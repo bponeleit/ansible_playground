@@ -10,4 +10,4 @@
    creates: influxdb_setup.log
 
 - name: Portforward to local host
-  shell: kubectl port-forward -n influxdb service/influxdb 9999:9999
+  shell: kubectl port-forward service/influxdb 9999:9999
