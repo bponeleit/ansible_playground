@@ -10,9 +10,11 @@
 
 - name: copy /etc/exports
   template: src=exports.j2 dest=/etc/exports owner=root group=root
+  register: nfs_export
 
 - name: restart nfs server
   service: name=nfs-kernel-server state=restarted
+  when: nfs_export
 
 - name: check for folder
   stat: path=nfs-provisioning
