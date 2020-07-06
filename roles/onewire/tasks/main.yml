@@ -42,3 +42,8 @@
 - name: Install paho-mqtt
   pip: 
     name: "paho-mqtt"
+
+- name: Copy sensor script
+  copy:
+    src: templates/w1.py
+    dest: w1.py
