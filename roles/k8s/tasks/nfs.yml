@@ -24,7 +24,7 @@
   git:
     repo: https://github.com/bponeleit/nfs-provisioning.git
     dest: nfs-provisioning
-  when: not nfs_provisioning
+  when: not nfs_provisioning.stat.exists
 
 - name: Set nfs-server ip in deployment for provisioner
   replace:
