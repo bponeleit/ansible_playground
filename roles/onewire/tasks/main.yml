@@ -51,7 +51,14 @@
 - name: install w1.service systemd unit file
   template: 
     src: templates/w1.j2 
+    dest: /lib/systemd/system/w1.service
+
+- name: Create a symbolic link
+  file:
+    src: /lib/systemd/system/w1.service
     dest: /etc/systemd/system/w1.service
+    state: link
+    mode: '0644'
 
 - name: start w1 service
   systemd: 
