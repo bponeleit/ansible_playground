@@ -1,0 +1,15 @@
+[Unit]
+Description=Read onewire sensors
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=root
+Type=simple
+Restart=on-failure
+WorkingDirectory=/home/pi
+RuntimeDirectoryMode=0750
+ExecStart=/usr/bin/python w1.py &
+
+[Install]
+WantedBy=multi-user.target

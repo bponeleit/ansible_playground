@@ -47,3 +47,14 @@
   copy:
     src: templates/w1.py
     dest: w1.py
+
+- name: install w1.service systemd unit file
+  template: 
+    src: templates/w1.j2 
+    dest: /etc/systemd/system/w1.service
+
+- name: start w1 service
+  systemd: 
+    state: started 
+    name: w1 
+    daemon_reload: yes
