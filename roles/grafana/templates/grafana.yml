@@ -1,0 +1,50 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    labels:
+        app: grafana
+    name: grafana
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: grafana
+    serviceName: grafana
+    template:
+        metadata:
+            labels:
+                app: grafana
+        spec:
+            containers:
+              - image: grafana/grafana
+                name: grafana
+                ports:
+                  - containerPort: 3000
+                    name: grafana
+                volumeMounts:
+                  - mountPath: /var/lib/grafana
+                    name: data
+    volumeClaimTemplates:
+      - metadata:
+            name: data
+        spec:
+            storageClassName: managed-nfs-storage
+            accessModes:
+              - ReadWriteOnce
+            resources:
+                requests:
+                    storage: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: grafana
+spec:
+    ports:
+      - name: grafana
+        port: 3000
+        targetPort: 3000
+    selector:
+        app: grafana
+    type: ClusterIP

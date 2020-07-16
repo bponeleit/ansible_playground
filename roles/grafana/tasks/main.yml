@@ -1,0 +1,13 @@
+---
+- name: Copy Deployment file
+  copy:
+    src: templates/grafana.yml
+    dest: grafana.yml
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f grafana.yml >> grafana_setup.log
+  args:
+   creates: grafana_setup.log
+
+#- name: Portforward to local host
+#  shell: kubectl port-forward service/grafana 9999:9999 &
