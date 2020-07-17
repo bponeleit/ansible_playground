@@ -1,0 +1,13 @@
+---
+- name: Copy Deployment file
+  copy:
+    src: templates/deployment.yml
+    dest: openhab.yml
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f openhab.yml >> openhab_setup.log
+  args:
+   creates: openhab_setup.log
+
+#- name: Portforward to local host
+#  shell: kubectl port-forward service/openhab 9999:9999 &

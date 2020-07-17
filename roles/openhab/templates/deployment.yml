@@ -1,0 +1,84 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    labels:
+        app: openhab
+    name: openhab
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: openhab
+    serviceName: openhab
+    template:
+        metadata:
+            labels:
+                app: openhab
+        spec:
+            containers:
+              - env:
+                - name: EXTRA_JAVA_OPTS
+                  value: -Duser.timezone=Europe/Berlin
+                - name: OPENHAB_HTTPS_PORT
+                  value: "8443"
+                - name: OPENHAB_HTTP_PORT
+                  value: "8080"    
+                name: openhab          
+                image: openhab/openhab:3.0.0-snapshot
+                ports:
+                    - containerPort: 8080
+                      name: http
+                    - containerPort: 8443
+                      name: https
+                volumeMounts:
+                    - mountPath: /openhab/addons
+                      name: openhab-addons
+                    - mountPath: /openhab/conf
+                      name: openhab-conf
+                    - mountPath: /openhab/userdata
+                      name: openhab-userdata
+    volumeClaimTemplates:
+      - metadata:
+            name: openhab-addons
+        spec:
+            storageClassName: managed-nfs-storage
+            accessModes:
+              - ReadWriteOnce
+            resources:
+                requests:
+                    storage: 5Gi
+      - metadata:
+            name: openhab-conf
+        spec:
+            storageClassName: managed-nfs-storage
+            accessModes:
+              - ReadWriteOnce
+            resources:
+                requests:
+                    storage: 100Mi           
+      - metadata:
+            name: openhab-userdata
+        spec:
+            storageClassName: managed-nfs-storage
+            accessModes:
+              - ReadWriteOnce
+            resources:
+                requests:
+                    storage: 5Gi                               
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: openhab
+spec:
+    ports:
+    - name: "http"
+      port: 8080
+      targetPort: 8080
+    - name: "https"
+      port: 8443
+      targetPort: 8443
+    selector:
+        app: openhab
+    type: ClusterIP

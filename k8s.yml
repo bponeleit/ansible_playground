@@ -6,4 +6,5 @@
    - influxdb
    - mqtt
    - grafana
+   - openhab
 
