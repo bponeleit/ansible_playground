@@ -29,3 +29,28 @@
 - name: Install paho-mqtt
   pip: 
     name: "paho-mqtt"
+
+- name: Copy sensor script
+  copy:
+    src: default/rf_mqtt.py
+    dest: rf_mqtt.py
+
+- name: install rf_mqtt.service systemd unit file
+  template: 
+    src: default/rf_mqtt.j2 
+    dest: /lib/systemd/system/rf_mqtt.service
+
+- name: Create a symbolic link
+  file:
+    src: /lib/systemd/system/rf_mqtt.service
+    dest: /etc/systemd/system/rf_mqtt.service
+    state: link
+    mode: '0644'
+
+- name: start rf_mqtt service
+  systemd: 
+    state: started 
+    name: rf_mqtt 
+    enabled: yes
+    masked: no
+    daemon_reload: yes

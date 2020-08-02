@@ -1,0 +1,15 @@
+[Unit]
+Description=Listen for RF commands
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=root
+Type=simple
+Restart=always
+WorkingDirectory=/home/pi
+RuntimeDirectoryMode=0750
+ExecStart=/usr/bin/python rf_mqtt.py 2>&1 &
+
+[Install]
+WantedBy=multi-user.target
