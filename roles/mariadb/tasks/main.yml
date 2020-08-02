@@ -1,0 +1,13 @@
+---
+- name: Copy Deployment file
+  copy:
+    src: templates/deployment.yml
+    dest: mariadb.yml
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f mariadb.yml >> mariadb_setup.log
+  args:
+   creates: mariadb_setup.log
+
+#- name: Portforward to local host
+#  shell: kubectl port-forward service/mariadb 9999:9999 &

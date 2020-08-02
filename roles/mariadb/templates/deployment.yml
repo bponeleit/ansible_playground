@@ -1,0 +1,50 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    labels:
+        app: mariadb
+    name: mariadb
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: mariadb
+    serviceName: mariadb
+    template:
+        metadata:
+            labels:
+                app: mariadb
+        spec:
+            containers:
+              - image: mariadb
+                name: mariadb
+                ports:
+                  - containerPort: 3306
+                    name: mariadb
+                volumeMounts:
+                  - mountPath: /var/lib/mysql
+                    name: data
+    volumeClaimTemplates:
+      - metadata:
+            name: data
+        spec:
+            storageClassName: managed-nfs-storage
+            accessModes:
+              - ReadWriteOnce
+            resources:
+                requests:
+                    storage: 30Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: mariadb
+spec:
+    ports:
+      - name: mariadb
+        port: 3306
+        targetPort: 3306
+    selector:
+        app: mariadb
+    type: ClusterIP
