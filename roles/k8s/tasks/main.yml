@@ -20,5 +20,8 @@
     chdir: $HOME
     creates: taint.log
 
+- name: INCLUDE | install metallb
+  include_tasks: metallb.yml
+
 - name: INCLUDE | create NFS share
   include_tasks: nfs.yml

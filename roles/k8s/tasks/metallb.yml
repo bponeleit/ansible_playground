@@ -1,0 +1,10 @@
+---
+- name: Copy Deployment file
+  copy:
+    src: templates/metallb.yml
+    dest: metallb.yml
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f metallb.yml >> metallb_setup.log
+  args:
+   creates: metallb_setup.log
