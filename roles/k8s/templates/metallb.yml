@@ -411,4 +411,4 @@ data:
     - name: default
       protocol: layer2
       addresses:
-      - 192.168.179.0-192.168.179.255
+      - 192.168.179.1-192.168.179.255

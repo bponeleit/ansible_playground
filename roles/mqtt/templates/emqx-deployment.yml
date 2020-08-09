@@ -5,7 +5,6 @@ metadata:
     labels: 
         name: emqx
         app: emqx
-
 spec:
     containers:
     - image: emqx/emqx
@@ -23,20 +22,15 @@ metadata:
     labels:
       name: emqx
       app: emqx
-      
 spec:
     selector:
-      name: mqtt
-    type: NodePort
+      name: emqx
+    type: LoadBalancer
     ports:
     - name: mqtt
-      nodePort: 31883
       port: 1883
       targetPort: 1883
-      protocol: TCP
       
     - name: mqtt-http
-      nodePort: 30083
       port: 18083
       targetPort: 18083
-      protocol: TCP

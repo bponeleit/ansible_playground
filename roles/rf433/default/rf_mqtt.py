@@ -75,7 +75,7 @@ def on_water_message(client, userdata, message):
 
 Connected = False   #global variable for the state of the connection
 
-broker_address= "10.244.0.5"  #Broker address
+broker_address= "192.168.179.1"  #Broker address
 port = 1883                         #Broker port
 # user = "yourUser"                    #Connection username
 # password = "yourPassword"            #Connection password
