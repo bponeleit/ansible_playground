@@ -2,6 +2,7 @@
 Description=Listen for RF commands
 Wants=network-online.target
 After=network-online.target
+After=sys-subsystem-net-devices-wlan0.device
 
 [Service]
 User=root
