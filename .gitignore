@@ -6,3 +6,4 @@ hosts
 *.sublime-workspace
 .pymodhis
 .DS_Store
+known_hosts

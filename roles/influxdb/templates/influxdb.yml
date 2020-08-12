@@ -14,7 +14,7 @@ spec:
     template:
         metadata:
             labels:
-                app: influxdb
+                app: influxdb 
         spec:
             containers:
               - image: quay.io/influxdb/influxdb:2.0.0-beta
