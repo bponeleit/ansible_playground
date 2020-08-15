@@ -1,0 +1,7 @@
+var Timer timer = null
+if (timer == null) {
+  timer = createTimer(now.plusMinutes(12), [ | 
+    logInfo("Wasser", "Wasser aus")
+    sendCommand("Garden_Shed_Freshwater", "OFF")
+  ] )
+}
