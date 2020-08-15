@@ -1,0 +1,13 @@
+---
+- name: Copy Deployment file
+  copy:
+    src: templates/deployment.yml
+    dest: sftp.yml
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f sftp.yml >> sftp_setup.log
+  args:
+   creates: sftp_setup.log
+
+#- name: Portforward to local host
+#  shell: kubectl port-forward service/sftp 9999:9999 &
