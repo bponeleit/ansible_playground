@@ -75,12 +75,12 @@ def on_water_message(client, userdata, message):
 
 Connected = False   #global variable for the state of the connection
 
-broker_address= "192.168.179.1"  #Broker address
+broker_address= "192.168.179.3"  #Broker address
 port = 1883                         #Broker port
 # user = "yourUser"                    #Connection username
 # password = "yourPassword"            #Connection password
 
-client = mqttClient.Client("Python")               #create new instance
+client = mqttClient.Client("Python/one", clean_session=False)               #create new instance
 # client.username_pw_set(user, password=password)    #set username and password
 client.on_connect= on_connect                      #attach function to callback
 client.on_message= on_message                      #attach function to callback
@@ -101,8 +101,8 @@ while Connected != True:    #Wait for connection
 sys.stdout.write("Connected")
 sys.stdout.flush()
 
-client.subscribe("/our place/commands/rf/#")
-client.subscribe("/our place/commands/water/garden/freshwater/#")
+client.subscribe("/our place/commands/rf/#", qos=1)
+client.subscribe("/our place/commands/water/garden/freshwater/#", qos=1)
 
 try:
     while True:
