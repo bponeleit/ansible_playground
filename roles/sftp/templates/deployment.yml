@@ -1,52 +1,69 @@
 ---
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
-    labels:
-        app: sftp
-    name: sftp
+  name: sftp
+  labels:
+    app: sftp
 spec:
-    replicas: 1
-    selector:
-        matchLabels:
-            app: sftp
-    serviceName: sftp
-    template:
-        metadata:
-            labels:
-                app: sftp
-        spec:
-            containers:
-              - image: markusmcnugen/sftp
-                name: sftp
-                args: ["scanner::1001:100:upload"]
-                ports:
-                  - containerPort: 22
-                    name: sftp
-                volumeMounts:
-                  - mountPath: /home/scanner/upload
-                    name: data
-                  - mountPath: /config
-                    name: config                   
-    volumeClaimTemplates:
-      - metadata:
-            name: data
-        spec:
-            storageClassName: managed-nfs-storage
-            accessModes:
-              - ReadWriteOnce
-            resources:
-                requests:
-                    storage: 5Gi
-      - metadata:
-            name: config
-        spec:
-            storageClassName: managed-nfs-storage
-            accessModes:
-              - ReadWriteOnce
-            resources:
-                requests:
-                    storage: 5Mi                                  
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sftp
+  template:
+    metadata:
+      labels:
+        app: sftp
+    spec:
+      containers:
+        - name: sftp
+          image: markusmcnugen/sftp
+          imagePullPolicy: IfNotPresent
+          name: sftp
+          args: ["scanner::1001:100:upload"]
+          ports:
+            - containerPort: 22
+              name: sftp
+          volumeMounts:
+            - name: sftp-data
+              mountPath: /home/scanner/upload
+            - name: sftp-config    
+              mountPath: /config
+      volumes:
+        - name: sftp-data
+          persistentVolumeClaim:
+            claimName: sftp-data
+        - name: sftp-config
+          persistentVolumeClaim:
+            claimName: sftp-config
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sftp-data
+  labels:
+    app: sftp
+spec:
+  storageClassName: managed-nfs-storage
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sftp-config
+  labels:
+    app: sftp
+spec:
+  storageClassName: managed-nfs-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi      
 ---
 apiVersion: v1
 kind: Service
