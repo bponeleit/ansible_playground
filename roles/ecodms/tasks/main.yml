@@ -1,0 +1,10 @@
+---
+- name: Copy Deployment file
+  copy:
+    src: templates/deployment.yml
+    dest: ecodms-deployment.yml
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f ecodms-deployment.yml >> ecodms-deployment.log
+  args:
+   creates: ecodms-deployment.log

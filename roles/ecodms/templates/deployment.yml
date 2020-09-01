@@ -1,0 +1,78 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecodms
+  labels:
+    app: ecodms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ecodms
+  template:
+    metadata:
+      labels:
+        app: ecodms
+    spec:
+      containers:
+        - name: ecodms
+          image: ecodms/allinone-18.09
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: ecodms-data
+              mountPath: /srv/data
+              subPath: data
+            - name: ecodms-data
+              mountPath: /srv/scaninput
+              subPath: scaninput
+            - name: ecodms-data
+              mountPath: /srv/backup
+              subPath: backup
+            - name: ecodms-data
+              mountPath: /srv/restore
+              subPath: restore
+      volumes:
+        - name: ecodms-data
+          persistentVolumeClaim:
+            claimName: ecodms-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ecodms-data
+  labels:
+    app: ecodms
+spec:
+  storageClassName: managed-nfs-storage
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ecodms
+spec:
+  selector:
+    app: ecodms
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 17001
+      targetPort: 17001
+      name: ecodms
+    - protocol: TCP
+      port: 17002
+      targetPort: 17002
+      name: db
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      name: web
+    - protocol: TCP
+      port: 8180
+      targetPort: 8180
+      name: api
