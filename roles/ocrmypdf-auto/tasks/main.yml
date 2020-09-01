@@ -1,0 +1,13 @@
+---
+- name: Copy Deployment file
+  copy:
+    src: templates/deployment.yml
+    dest: ocrmypdf-auto.yml
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f ocrmypdf-auto.yml >> ocrmypdf-auto_setup.log
+  args:
+   creates: ocrmypdf-auto_setup.log
+
+#- name: Portforward to local host
+#  shell: kubectl port-forward service/ocrmypdf-auto 9999:9999 &

@@ -1,0 +1,45 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    labels:
+        app: ocrmypdf-auto
+    name: ocrmypdf-auto
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: ocrmypdf-auto
+    serviceName: ocrmypdf-auto
+    template:
+        metadata:
+            labels:
+                app: ocrmypdf-auto
+        spec:
+            containers:
+              - image: quay.io/cmccambridge/ocrmypdf-auto
+                name: ocrmypdf-auto
+                volumeMounts:
+                  - mountPath: /input
+                    name: sftp-data
+                  - mountPath: /config
+                    name: ocrmypdf-auto-config                   
+    volumeClaimTemplates:
+      - metadata:
+            name: sftp-data
+        spec:
+            storageClassName: managed-nfs-storage
+            accessModes:
+              - ReadWriteMany
+            dataSource: 
+              kind: PersistendVolumeClaim
+              name: data-sftp-0
+      - metadata:
+            name: ocrmypdf-auto-config
+        spec:
+            storageClassName: managed-nfs-storage
+            accessModes:
+              - ReadWriteOnce
+            resources:
+                requests:
+                    storage: 5Mi                                  

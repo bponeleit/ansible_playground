@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocrmypdf
+  labels:
+    app: ocrmypdf
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ocrmypdf
+  template:
+    metadata:
+      labels:
+        app: ocrmypdf
+    spec:
+      containers:
+        - name: ocrmypdf
+          image: quay.io/cmccambridge/ocrmypdf-auto
+          imagePullPolicy: IfNotPresent
+          name: ocrmypdf
+          volumeMounts:
+            - name: ocrmypdf-input
+              mountPath: /input
+            - name: ocrmypdf-config    
+              mountPath: /config
+            - name: ocrmypdf-output
+              mountPath: /output
+              subPath: scaninput
+      volumes:
+        - name: ocrmypdf-input
+          persistentVolumeClaim:
+            claimName: sftp-data
+        - name: ocrmypdf-config
+          persistentVolumeClaim:
+            claimName: ocrmypdf-config 
+        - name: ocrmypdf-output
+          persistentVolumeClaim:
+            claimName: ecodms-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ocrmypdf-config
+  labels:
+    app: ocrmypdf
+spec:
+  storageClassName: managed-nfs-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi           
