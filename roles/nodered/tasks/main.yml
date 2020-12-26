@@ -1,0 +1,10 @@
+---
+- name: Copy Deployment file
+  copy:
+    src: templates/nodered.yml
+    dest: nodered.yml
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f nodered.yml >> nodered_setup.log
+  args:
+   creates: nodered_setup.log
