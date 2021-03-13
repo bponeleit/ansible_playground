@@ -25,7 +25,7 @@ spec:
                 - name: OPENHAB_HTTP_PORT
                   value: "8080"    
                 name: openhab          
-                image: openhab/openhab:3.0.0-snapshot
+                image: openhab/openhab:3.0.0
                 ports:
                     - containerPort: 8080
                       name: http

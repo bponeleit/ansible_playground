@@ -2,11 +2,11 @@
 - name: Clone Pi-Hole
   git:
     repo: https://github.com/pi-hole/pi-hole.git
-    depth: 1
+    depth: "1"
     dest: /home/pi/Pi-Hole
 
 - name: Install Pi-Hole
-  shell: ./basic-install.sh >> install.log
+  shell: ./basic-install.sh --unattended >> install.log
   args: 
       chdir: '/home/pi/Pi-Hole/automated install'
 
