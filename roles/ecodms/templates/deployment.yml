@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: ecodms
-          image: ecodms/allinone-18.09
+          image: ecodms/ecodms
           imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: ecodms-data
