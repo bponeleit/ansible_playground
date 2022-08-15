@@ -17,13 +17,13 @@ spec:
                 app: influxdb
         spec:
             containers:
-              - image: quay.io/influxdb/influxdb:2.1.1
+              - image: influxdb:2.3
                 name: influxdb
                 ports:
                   - containerPort: 8086
                     name: influxdb
                 volumeMounts:
-                  - mountPath: /root/.influxdbv2
+                  - mountPath: /var/lib/influxdb2
                     name: data
     volumeClaimTemplates:
       - metadata:
