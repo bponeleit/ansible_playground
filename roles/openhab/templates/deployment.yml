@@ -25,7 +25,7 @@ spec:
                 - name: OPENHAB_HTTP_PORT
                   value: "8080"    
                 name: openhab          
-                image: openhab/openhab:3.0.0
+                image: openhab/openhab:3.1.0
                 ports:
                     - containerPort: 8080
                       name: http
@@ -36,7 +36,9 @@ spec:
                     - containerPort: 9126
                       name: bin-rpc    
                     - containerPort: 8101
-                      name: karaf                  
+                      name: karaf      
+                    - containerPort: 9123
+                      name: homekit            
                 volumeMounts:
                     - mountPath: /openhab/addons
                       name: openhab-addons
@@ -93,7 +95,11 @@ spec:
       targetPort: 9126   
     - name: "karaf"
       port: 8101
-      targetPort: 8101       
+      targetPort: 8101  
+    - name: "homekit"
+      port: 9123
+      targetPort: 9123     
     selector:
         app: openhab
     type: LoadBalancer
+    loadBalancerIP: 192.168.179.2

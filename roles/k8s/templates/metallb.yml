@@ -320,7 +320,7 @@ spec:
             secretKeyRef:
               name: memberlist
               key: secretkey
-        image: metallb/speaker:main
+        image: metallb/speaker
         imagePullPolicy: Always
         name: speaker
         ports:
@@ -376,7 +376,7 @@ spec:
       - args:
         - --port=7472
         - --config=config
-        image: metallb/controller:main
+        image: metallb/controller
         imagePullPolicy: Always
         name: controller
         ports:
@@ -412,3 +412,18 @@ data:
       protocol: layer2
       addresses:
       - 192.168.179.1-192.168.179.255
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: example
+  namespace: metallb-system
+spec:
+  addresses:
+  - 192.168.179.0/24
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: empty
+  namespace: metallb-system

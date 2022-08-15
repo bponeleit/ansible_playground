@@ -17,7 +17,7 @@ spec:
                 app: influxdb
         spec:
             containers:
-              - image: quay.io/influxdb/influxdb:v2.0.3
+              - image: quay.io/influxdb/influxdb:2.1.1
                 name: influxdb
                 ports:
                   - containerPort: 8086
@@ -48,3 +48,4 @@ spec:
     selector:
         app: influxdb
     type: LoadBalancer
+    loadBalancerIP: 192.168.179.7

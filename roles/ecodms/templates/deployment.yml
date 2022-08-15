@@ -59,6 +59,7 @@ spec:
   selector:
     app: ecodms
   type: LoadBalancer
+  loadBalancerIP: 192.168.179.5
   ports:
     - protocol: TCP
       port: 17001
