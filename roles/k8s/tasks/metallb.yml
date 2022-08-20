@@ -1,10 +1,4 @@
 ---
-- name: Create secret
-  shell: kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
-  args:
-    chdir: $HOME
-    creates: metallb_secret.log  
-
 - name: Copy Deployment file
   copy:
     src: templates/metallb.yml
@@ -14,3 +8,9 @@
   shell: kubectl apply -f metallb.yml >> metallb_setup.log
   args:
    creates: metallb_setup.log
+
+#- name: Create secret
+#  shell: kubectl create secret generic -n metallb-system memberlist --from-literal=secretkey="$(openssl rand -base64 128)"
+#  args:
+#    chdir: $HOME
+#    creates: metallb_secret.log  

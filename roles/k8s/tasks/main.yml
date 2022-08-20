@@ -15,7 +15,7 @@
 
 #Untaint master, so it will be available as worker node
 - name: Untaint master node
-  shell: kubectl taint nodes --all node-role.kubernetes.io/control-plane- node-role.kubernetes.io/master- dedicated=special-user:NoSchedule- >> taint.log
+  shell: kubectl taint nodes --all node-role.kubernetes.io/control-plane- node-role.kubernetes.io/master- >> taint.log
   args:
     chdir: $HOME
     creates: taint.log
