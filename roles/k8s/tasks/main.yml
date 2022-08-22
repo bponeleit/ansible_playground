@@ -30,3 +30,11 @@
 
 - name: INCLUDE | create NFS share
   include_tasks: nfs.yml
+
+- name: Copy Deployment file
+  copy:
+    src: templates/mdns.yml
+    dest: mdns.yml
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f mdns.yml
