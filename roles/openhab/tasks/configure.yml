@@ -1,0 +1,57 @@
+---
+- set_fact: api_token="{{ lookup('env','api_token') }}"
+- name: install addons
+  uri: 
+    url: "http://192.168.179.2:8080/rest/addons/{{ item }}/install"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    return_content: true
+  with_items: 
+    - misc-homekit
+    - binding-http
+    - binding-tr064
+    - transformation-jsonpath
+    - binding-sonos
+    - persistence-rrd4j
+    - binding-neato
+    - binding-systeminfo
+    - binding-telegram
+    - transformation-map
+    - persistence-influxdb
+    - binding-amazonechocontrol
+    - binding-homematic
+    - misc-openhabcloud
+    - binding-playstation
+    - binding-mqtt
+    - transformation-javascript
+
+- name: verfiy install
+  uri: 
+    url: "http://192.168.179.2:8080/rest/addons/{{ item }}"
+    # method: POST
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    return_content: true
+  register: openhab_install_result
+  failed_when: openhab_install_result.json.installed != true
+  with_items: 
+    - misc-homekit
+    - binding-http
+    - binding-tr064
+    - transformation-jsonpath
+    - binding-sonos
+    - persistence-rrd4j
+    - binding-neato
+    - binding-systeminfo
+    - binding-telegram
+    - transformation-map
+    - persistence-influxdb
+    - binding-amazonechocontrol
+    - binding-homematic
+    - misc-openhabcloud
+    - binding-playstation
+    - binding-mqtt
+    - transformation-javascript

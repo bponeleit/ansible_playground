@@ -11,3 +11,6 @@
 
 #- name: Portforward to local host
 #  shell: kubectl port-forward service/openhab 9999:9999 &
+
+- name: INCLUDE | install configure OpenHAB
+  include_tasks: configure.yml
