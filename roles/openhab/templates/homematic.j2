@@ -1,0 +1,15 @@
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.Files
+
+rule "IP address changed"
+when
+    Item OpenHABHost_Network_IPAddress received update or
+    System started
+then
+        val Path path = Paths.get("/openhab/conf/things/homematic.things")
+        var String content = "//*******************************\n//DO NOT CHANGE THIS FILE - IT IS CREATED AUTOMATICALLY BY A RULE\n//*******************************\nBridge homematic:bridge:CCU2 [ gatewayAddress=\"192.168.178.11\", callbackHost=\"192.168.179.2\", bindAddress=\"" + OpenHABHost_Network_IPAddress.state + "\" ]" 
+        Files.write(path, content.getBytes())
+        content = new String(Files.readAllBytes(path))
+        logInfo("Network", "IP-Address has changed, homematic bridge updated in thing-file: " + content)
+end
