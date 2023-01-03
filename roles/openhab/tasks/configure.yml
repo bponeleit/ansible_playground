@@ -1,5 +1,11 @@
 ---
 - set_fact: api_token="{{ lookup('env','api_token') }}"
+- set_fact: physical_path="{{ lookup('env', 'physical_path') }}"
+- set_fact: ha_chatid="{{ lookup('env', 'ha_chatid') }}"
+- set_fact: ha_token="{{ lookup('env', 'ha_token') }}"
+- set_fact: test_chatid="{{ lookup('env', 'test_chatid') }}"
+- set_fact: test_token="{{ lookup('env', 'test_token') }}"
+
 - name: install addons
   uri: 
     url: "http://192.168.179.2:8080/rest/addons/{{ item }}/install"
@@ -27,7 +33,7 @@
     - binding-mqtt
     - transformation-javascript
 
-- name: verfiy install
+- name: verify install
   uri: 
     url: "http://192.168.179.2:8080/rest/addons/{{ item }}"
     # method: POST
@@ -55,3 +61,323 @@
     - binding-playstation
     - binding-mqtt
     - transformation-javascript
+
+- name: Get things
+  uri: 
+    url: "http://192.168.179.2:8080/rest/things"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    return_content: true
+  register: openhab_initial_things
+
+- name: Get systeminfo
+  set_fact: openhab_systeminfo_thing="{{ openhab_initial_things.json | json_query(jmesquery) | first }}"
+  vars: 
+    jmesquery: "[? thingTypeUID==`systeminfo:computer`].UID"
+  when: openhab_initial_things.json is defined and (openhab_initial_things.json|length > 0)
+
+- name: Discover systeminfo
+  uri: 
+    url: "http://192.168.179.2:8080/rest/discovery/bindings/systeminfo/scan"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "text/plain"
+    return_content: true
+  when: openhab_systeminfo_thing is not defined
+  register: openhab_systeminfo_result
+
+- name: Read Inbox Thing 
+  uri: 
+    url: "http://192.168.179.2:8080/rest/inbox"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    return_content: true
+  when: openhab_systeminfo_result is not skipped
+  register: openhab_systeminfo_inbox
+
+- name: Get new Thing
+  set_fact:
+    openhab_systeminfo_thing: "{{ openhab_systeminfo_inbox.json | json_query('[? thingTypeUID==`systeminfo:computer`].thingUID') | first }}"
+  when: openhab_systeminfo_result is not skipped
+
+- name: Approve systeminfo
+  uri: 
+    url: "http://192.168.179.2:8080/rest/inbox/{{ openhab_systeminfo_thing | urlencode }}/approve"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+      Content-Type: "text/plain"
+    body_format: "json"
+    body: ""
+    return_content: true
+  when: openhab_systeminfo_result is not skipped
+  register: openhab_systeminfo_inbox
+
+- name: Check for OpenHABHost_Network_IPAddress
+  uri:
+    url: "http://192.168.179.2:8080/rest/items/OpenHABHost_Network_IPAddress"
+    method: GET
+    headers:
+        Authorization: "Bearer {{ api_token }}"
+        Accept: "application/json"
+    return_content: true
+  register: openhab_network_ipaddress
+  ignore_errors: True
+
+- name: Create OpenHABHost_Network_IPAddress
+  uri: 
+    url: "http://192.168.179.2:8080/rest/items/OpenHABHost_Network_IPAddress"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    body_format: "json"
+    body: '{ "type": "String", "name": "OpenHABHost_Network_IPAddress", "label": "IP address", "tags": [ "Point" ] }'
+    return_content: true
+    status_code: 201
+  when: openhab_network_ipaddress is failed
+  register: openhab_network_ipaddress
+
+- name: Get link OpenHABHost_Network_IPAddress
+  uri:
+    url: "http://192.168.179.2:8080/rest/links/OpenHABHost_Network_IPAddress/{{ 'systeminfo:computer:openhab-0:network#ip' | urlencode }}"
+    method: GET
+    headers:
+        Authorization: "Bearer {{ api_token }}"
+        Accept: "application/json"
+    return_content: true
+  register: openhab_network_link
+  ignore_errors: True
+
+- name: Create link OpenHABHost_Network_IPAddress
+  uri: 
+    url: "http://192.168.179.2:8080/rest/links/OpenHABHost_Network_IPAddress/{{ 'systeminfo:computer:openhab-0:network#ip' | urlencode }}"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+      status_code: 201
+    body_format: "json"
+    body: '{ "itemName": "OpenHABHost_Network_IPAddress", "channelUID": "systeminfo:computer:openhab-0:network#ip" }'
+    return_content: true
+  when: openhab_network_link is failed
+  register: openhab_network_link 
+
+- name: Get a list of all openhab pvc objects
+  kubernetes.core.k8s_info:
+    api_version: v1
+    kind: pvc
+    label_selectors:
+      - app = openhab
+  register: pvc_list
+
+- name: Get path name
+  set_fact:
+    path: "default-openhab-conf-openhab-0-{{ pvc_list | json_query('resources[? metadata.name == `openhab-conf-openhab-0`].spec.volumeName') | first }}"
+
+- name: copy homematic.rules
+  template: 
+    src: homematic.j2 
+    dest: "{{ physical_path }}{{ path }}/rules/homematic.rules" 
+    owner: 9001 
+    group: 9001
+  register: homematic_rules
+
+- name: Read Inbox Things
+  uri: 
+    url: "http://192.168.179.2:8080/rest/inbox"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    return_content: true
+  register: openhab_inbox
+
+- name: Approve homematic things
+  uri: 
+    url: "http://192.168.179.2:8080/rest/inbox/{{ item.thingUID | urlencode }}/approve"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+      Content-Type: "text/plain"
+    body_format: "json"
+    body: ""
+    return_content: true
+  with_items: "{{ openhab_inbox.json }}"
+  when: ( openhab_inbox.json | length > 0 ) 
+  register: openhab_homematic_things
+
+- name: Get Things
+  uri: 
+    url: "http://192.168.179.2:8080/rest/things?summary=true"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    return_content: true
+  register: openhab_telegram_things
+
+- name: Get telegram Thing
+  set_fact: 
+    openhab_telegram: "{{ openhab_telegram_things.json | json_query('[? label == `Telegram-Bot`]') }}"
+
+- name: Create telegram Thing
+  uri: 
+    url: "http://192.168.179.2:8080/rest/things"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    body_format: "json"
+    body: '{ "editable": true, "label": "Telegram-Bot", "configuration": { "proxyType": "SOCKS5", "longPollingTime": 25,  "parseMode": "", "chatIds": [ "{{ ha_chatid }}" ], "botToken": "{{ ha_token }}" }, "properties": {}, "UID": "telegram:telegramBot:homeautomation", "thingTypeUID": "telegram:telegramBot" }'
+    status_code: 201
+    return_content: true
+  when: ( openhab_telegram | length == 0 )
+  register: openhab_telegram_bot
+
+- name: Check for OpenHABHost_Network_IPAddress
+  uri:
+    url: "http://192.168.179.2:8080/rest/items/OpenHABHost_Network_IPAddress"
+    method: GET
+    headers:
+        Authorization: "Bearer {{ api_token }}"
+        Accept: "application/json"
+    return_content: true
+  register: openhab_network_ipaddress
+  ignore_errors: True
+
+- name: Create group items
+  uri: 
+    url: "http://192.168.179.2:8080/rest/items/{{ item | from_json | json_query('name') }}"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    body_format: "json"
+    body: "{{ item }}"
+    return_content: true
+    status_code: 201
+  with_items: 
+    - '{ "type": "Group", "name": "Home", "label": "Oberlindelbach", "tags": [ "Location" ] }'
+    - '{ "type": "Group", "name": "House", "groupNames": [ "Home" ], "label": "Haus", "tags": [ "House" ], "category": "house"}'
+    - '{ "type": "Group", "name": "Outdoor", "groupNames": [ "Home" ], "label": "Draußen", "tags": [ "Outdoor" ] }'
+    - '{ "type": "Group", "name": "Cellar", "groupNames": [ "House" ], "label": "Keller", "tags": [ "Cellar" ], "category": "cellar"}'
+    - '{ "type": "Group", "name": "Basement", "groupNames": [ "House" ], "label": "Einliegerwohnung", "tags": [ "Basement" ], "category": "cellar"}'
+    - '{ "type": "Group", "name": "GroundFloor", "groupNames": [ "House" ], "label": "Erdgeschoss", "tags": [ "GroundFloor" ], "category": "groundfloor"}'
+    - '{ "type": "Group", "name": "FirstFloor", "groupNames": [ "House" ], "label": "Erster Stock", "tags": [ "FirstFloor" ], "category": "firstfloor"}'
+    - '{ "type": "Group", "name": "Attic", "groupNames": [ "House" ], "label": "Dachboden", "tags": [ "Attic" ], "category": "attic"}'
+    - '{ "type": "Group", "name": "Garden", "groupNames": [ "Outdoor" ], "label": "Garten", "tags": [ "Garden" ], "category": "garden"}'
+    - '{ "type": "Group", "name": "Carport", "groupNames": [ "Outdoor" ], "label": "Carport", "tags": [ "Carport" ], "category": "garage_detached"}'
+    - '{ "type": "Group", "name": "BasementBathroom", "groupNames": [ "Basement" ], "label": "Keller Bad", "tags": [ "Bathroom" ], "category": "bath"}'
+    - '{ "type": "Group", "name": "HMESPMSw1PlPEQ0412823", "groupNames": [ "BasementBathroom" ], "label": "Waschmaschine", "tags": [ "PowerOutlet" ], "category": "washingmachine"}'
+  register: openhab_groups
+  ignore_errors: true
+  
+- name: Create washing machine
+  uri: 
+    url: "http://192.168.179.2:8080/rest/items/{{ item | from_json | json_query('name') }}"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    body_format: "json"
+    body: "{{ item }}"
+    return_content: true
+    status_code: 201
+  with_items:    
+    - '{ "type": "Number:Power", "name": "HMESPMSw1PlPEQ0412823_Power", "groupNames": [ "HMESPMSw1PlPEQ0412823" ], "label": "Waschmaschine Leistung", "tags": [ "Point" ], "category": "energy"}'
+    - '{ "type": "Number", "name": "HMESPMSw1PlPEQ0412823_Current", "groupNames": [ "HMESPMSw1PlPEQ0412823" ], "label": "Waschmaschine Strom", "tags": [ "Point" ], "category": "energy"}'
+    - '{ "type": "Number:Energy", "name": "HMESPMSw1PlPEQ0412823_EnergyCounter", "groupNames": [ "HMESPMSw1PlPEQ0412823" ], "label": "Waschmaschine Stromzähler", "tags": [ "Point" ], "category": "energy"}'
+    - '{ "type": "Number:ElectricPotential", "name": "HMESPMSw1PlPEQ0412823_Voltage", "groupNames": [ "HMESPMSw1PlPEQ0412823" ], "label": "Waschmaschine Spannung", "tags": [ "Point" ], "category": "energy"}'
+    - '{ "type": "Number", "name": "WashingMachineStatus", "groupNames": [ "HMESPMSw1PlPEQ0412823" ], "label": "Waschmaschine Status", "tags": [ "WashingMachine" ], "category": "status"}'
+  register: openhab_washingmachine
+  ignore_errors: true
+
+- name: Get link HMESPMSw1PlPEQ0412823_Power
+  uri:
+    url: "http://192.168.179.2:8080/rest/links/HMESPMSw1PlPEQ0412823_Power/{{ 'homematic:HM-ES-PMSw1-Pl:CCU2:PEQ0412823:2#POWER' | urlencode }}"
+    method: GET
+    headers:
+        Authorization: "Bearer {{ api_token }}"
+        Accept: "application/json"
+    return_content: true
+  register: openhab_washingmachine_link
+  ignore_errors: True
+
+- name: Create link for washing machine
+  uri: 
+    url: "http://192.168.179.2:8080/rest/links/HMESPMSw1PlPEQ0412823_Power/{{ 'homematic:HM-ES-PMSw1-Pl:CCU2:PEQ0412823:2#POWER' | urlencode }}"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    status_code: 201
+    body_format: "json"
+    body: '{ "itemName": "HMESPMSw1PlPEQ0412823_Power", "channelUID": "homematic:HM-ES-PMSw1-Pl:CCU2:PEQ0412823:2#POWER" }'
+    return_content: true
+  when: openhab_washingmachine_link is failed
+  register: openhab_washingmachine_link 
+  ignore_errors: True
+
+- name: Create washing machine rule
+  uri: 
+    url: "http://192.168.179.2:8080/rest/rules"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    status_code: 201
+    body_format: "json"
+    body: "{{ lookup('file', 'washing_machine.json') }}"
+    return_content: true
+  register: openhab_washingmachine_rule
+  ignore_errors: True
+
+- name: Get Things
+  uri: 
+    url: "http://192.168.179.2:8080/rest/things?summary=true"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    return_content: true
+  register: openhab_telegram_things
+
+- name: Get telegram Thing
+  set_fact: 
+    openhab_telegram: "{{ openhab_telegram_things.json | json_query('[? label == `Telegram-Testing-Bot`]') }}"
+
+- name: Create telegram Thing
+  uri: 
+    url: "http://192.168.179.2:8080/rest/things"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    body_format: "json"
+    body: '{ "editable": true, "label": "Telegram-Testing-Bot", "configuration": { "proxyType": "SOCKS5", "longPollingTime": 25,  "parseMode": "", "chatIds": [ "{{ test_chatid }}" ], "botToken": "{{ test_token }}" }, "properties": {}, "UID": "telegram:telegramBot:test", "thingTypeUID": "telegram:telegramBot" }'
+    status_code: 201
+    return_content: true
+  when: ( openhab_telegram | length == 0 )
+  register: openhab_telegram_bot
+
+# - name: Get things
+#   uri: 
+#     url: "http://192.168.179.2:8080/rest/things"
+#     method: GET
+#     headers:
+#       Authorization: "Bearer {{ api_token }}"
+#       Accept: "application/json"
+#     return_content: true
+#   register: openhab_initial_things
+
+# - name: debug
+#   debug:
+#     msg: "Success"

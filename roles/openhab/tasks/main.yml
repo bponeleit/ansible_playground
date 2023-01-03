@@ -12,5 +12,15 @@
 #- name: Portforward to local host
 #  shell: kubectl port-forward service/openhab 9999:9999 &
 
-- name: INCLUDE | install configure OpenHAB
+- name: Install python-pip module
+  package:
+    name: "python3-pip"
+    state: latest
+
+- name: Install python kubernetes module
+  pip:
+    name: kubernetes
+    
+
+- name: INCLUDE | install configure OpenHABk
   include_tasks: configure.yml
