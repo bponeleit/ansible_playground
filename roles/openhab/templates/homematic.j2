@@ -8,7 +8,7 @@ when
     System started
 then
         val Path path = Paths.get("/openhab/conf/things/homematic.things")
-        var String content = "//*******************************\n//DO NOT CHANGE THIS FILE - IT IS CREATED AUTOMATICALLY BY A RULE\n//*******************************\nBridge homematic:bridge:CCU2 [ gatewayAddress=\"192.168.178.11\", callbackHost=\"192.168.179.2\", bindAddress=\"" + OpenHABHost_Network_IPAddress.state + "\" ]" 
+        var String content = "//*******************************\n//DO NOT CHANGE THIS FILE - IT IS CREATED AUTOMATICALLY BY A RULE\n//*******************************\nBridge homematic:bridge:CCU2 [ gatewayAddress=\"192.168.178.11\", callbackHost=\"192.168.179.2\", bindAddress=\"" + OpenHABHost_Network_IPAddress.state + "\", bufferSize=\"4096\" ]" 
         Files.write(path, content.getBytes())
         content = new String(Files.readAllBytes(path))
         logInfo("Network", "IP-Address has changed, homematic bridge updated in thing-file: " + content)
