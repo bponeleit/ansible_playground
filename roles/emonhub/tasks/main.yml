@@ -1,0 +1,37 @@
+---
+#- name: restart machine
+#  shell: reboot
+#  async: 1
+#  poll: 0
+#  ignore_errors: true
+#  when: dtoverlay.changed
+
+- name: Install git
+  package:
+    name: "git-core"
+    state: latest
+
+- name: Checkout emonhub
+  git:
+    repo: https://github.com/bponeleit/emonhub.git
+    dest: /home/pi/emonhub
+    version: iec62056-21-smartmeter
+
+- name: Change the working directory to somedir/ before executing the command
+  shell: /home/pi/emonhub/install.sh 1 emonhub>> emonhub.txt
+  args:
+    chdir: /home/pi/emonhub
+    creates: emonhub.txt
+
+- name: Copy configuration
+  copy:
+    src: default/emonhub.conf
+    dest: /etc/emonhub/emonhub.conf
+
+- name: start emonhub service
+  systemd: 
+    state: started 
+    name: emonhub
+    enabled: yes
+    masked: no
+    daemon_reload: yes

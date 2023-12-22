@@ -1,4 +1,4 @@
-
+.gitignore
 *.retry
 *.pyc
 hosts
@@ -6,4 +6,7 @@ hosts
 *.sublime-workspace
 .pymodhis
 .DS_Store
+.kube
 known_hosts
+token
+
