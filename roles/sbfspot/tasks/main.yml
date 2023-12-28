@@ -1,0 +1,30 @@
+---
+- name: Install mosquitto client
+  package:
+    name: "mosquitto-clients,bluetooth,libbluetooth-dev,libboost-date-time-dev,libboost-system-dev,libboost-filesystem-dev,libboost-regex-dev"
+    state: latest
+
+
+
+- name: Checkout SBFSpot
+  git:
+    repo: https://github.com/SBFspot/SBFspot.git
+    dest: /home/pi/SBFSpot
+
+- name: Build SBFSpot
+  make:
+    chdir: /home/pi/SBFSpot/SBFspot
+    target: nosql
+
+- name: Install SBFSpot
+  make:
+    chdir: /home/pi/SBFSpot/SBFspot
+    target: install_nosql
+
+- name: Ensure a job that runs every 5 minutes. 
+  ansible.builtin.cron:
+    name: "SBFSpot"
+    minute: "*/5"    
+    job: " /home/pi/SBFSpot/SBFspot/SBFspot -mqtt > /var/log/sbfspot.log"    
+
+
