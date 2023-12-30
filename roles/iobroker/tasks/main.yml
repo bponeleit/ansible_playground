@@ -1,0 +1,10 @@
+---
+- name: Copy Deployment file
+  copy:
+    src: templates/iobroker.yml
+    dest: iobroker.yml
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f iobroker.yml >> iobroker_setup.log
+  args:
+   creates: iobroker_setup.log
