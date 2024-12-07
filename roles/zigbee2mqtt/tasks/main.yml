@@ -1,0 +1,36 @@
+---
+
+- name: Install pyopenssl
+  pip: 
+    name: "pyopenssl"    
+
+- name: Ensure libseccomp2  is installed
+  package:
+    name: "libseccomp2"
+    state: latest
+
+# - name: Ensure docker is installed
+#   package:
+#     name: "docker"
+#     state: latest
+
+- name: Install docker
+  pip: 
+    name: "docker"        
+
+- name: Install docker-compose
+  pip: 
+    name: "docker-compose"    
+
+- name: Copy docker-compose
+  copy:
+    src: templates/docker-compose.yml
+    dest: docker-compose.yml
+
+- name: Create and start services
+  docker_compose:    
+    project_src: zigbee2mqtt
+  register: output
+
+- ansible.builtin.debug:
+    var: output
