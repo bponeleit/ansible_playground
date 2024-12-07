@@ -1,0 +1,10 @@
+---
+- name: Copy Deployment file
+  copy:
+    src: templates/grocy.yml
+    dest: grocy.yml
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f grocy.yml >> grocy_setup.log
+  args:
+   creates: grocy_setup.log

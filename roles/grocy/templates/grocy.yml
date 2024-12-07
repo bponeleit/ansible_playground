@@ -1,0 +1,69 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grocy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: grocy
+  template:
+    metadata:
+      labels:
+        name: grocy
+    spec:
+      containers:
+      - name: grocy
+        imagePullPolicy: Always
+        image: linuxserver/grocy:latest
+        ports:
+          - containerPort: 9283
+        volumeMounts:
+          - name: db
+            mountPath: /config/data
+        env:
+          - name: PUID
+            value: "1000"
+          - name: PGID
+            value: "1000"
+          - name: TZ
+            value: "Europe/Berlin"
+          - name: GROCY_CURRENCY
+            value: "EUR"
+          - name: GROCY_DEFAULT_LOCALE
+            value: "de"
+      volumes:
+        - name: db
+          persistentVolumeClaim:
+            claimName: grocy-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grocy-data
+  labels:
+    app: grocy
+spec:
+  storageClassName: managed-nfs-storage
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grocy
+spec:
+  selector:
+    app: grocy
+  type: LoadBalancer
+  loadBalancerIP: 192.168.179.9
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  selector:
+    name: grocy             
