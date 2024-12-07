@@ -17,7 +17,7 @@ spec:
                 app: iobroker
         spec:
             containers:
-              - image: buanet/iobroker:latest-v9
+              - image: buanet/iobroker:latest-v10
                 name: iobroker
                 ports:
                   - containerPort: 8081
