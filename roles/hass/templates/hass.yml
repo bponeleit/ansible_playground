@@ -44,18 +44,16 @@ spec:
     requests:
       storage: 10Gi            
 ---
+apiVersion: v1			  
 kind: Service
-apiVersion: v1
 metadata:
   name: home-assistant
 spec:
+  ports:
+    - name: home-assistant
+      port: 8123    
+      targetPort: 8123  
   selector:
-    app: home-assistant
+    app: home-assistant  		  
   type: LoadBalancer
   loadBalancerIP: 192.168.179.10
-  ports:
-    - name: http
-      port: 8123
-      targetPort: 8123
-  selector:
-    name: home-assistant               
