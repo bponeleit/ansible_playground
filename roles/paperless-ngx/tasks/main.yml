@@ -1,0 +1,18 @@
+---
+- set_fact: paperless_pw="{{ lookup('env', 'paperless_pw') }}"
+- name: Copy Deployment file
+  copy:
+    src: templates/pngx.yml
+    dest: pngx.yml
+
+- name: Set paperless-ngx pw
+  replace:
+    path: pngx.yml
+    regexp: '<<PAPERLESS_PW>>'
+    replace: '{{ paperless_pw }}'
+  register: nfs_ip
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f pngx.yml >> pngx_setup.log
+  args:
+   creates: pngx_setup.log

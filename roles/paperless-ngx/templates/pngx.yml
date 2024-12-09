@@ -1,0 +1,134 @@
+---      
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paperless
+  labels:
+    app: paperless
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: paperless
+  template:
+    metadata:
+      labels:
+        app: paperless
+    spec:
+      volumes:
+        - name: paperless-data
+          persistentVolumeClaim:
+            claimName: paperless-data
+        - name: paperless-media
+          persistentVolumeClaim:
+            claimName: paperless-media
+        - name: paperless-consume
+          persistentVolumeClaim:
+            claimName: sftp-data
+      containers:
+        - name: paperless
+          image: ghcr.io/paperless-ngx/paperless-ngx:latest
+          ports:
+            - containerPort: 8000
+          imagePullPolicy: Always
+          volumeMounts:
+            - mountPath: "/data/data"
+              name: paperless-data
+            - mountPath: "/data/media"
+              name: paperless-media
+            - mountPath: "/data/consume"
+              name: paperless-consume
+          env:
+            - name: PAPERLESS_REDIS
+              value: "redis://redis:6379"
+            - name: PAPERLESS_DATA_DIR
+              value: "/data/data"
+            - name: PAPERLESS_MEDIA_ROOT
+              value: "/data/media"
+            - name: PAPERLESS_CONSUMPTION_DIR
+              value: "/data/consume"
+            - name: PAPERLESS_ADMIN_USER
+              value: "root"
+            - name: PAPERLESS_ADMIN_PASSWORD
+              value: "<<PAPERLESS_PW>>"
+#            - name: PAPERLESS_URL
+#%              value: "https://paperless.yourdomain.com"
+            - name: PAPERLESS_BIND_ADDR
+              value: "0.0.0.0"
+            - name: PAPERLESS_PORT
+              value: "8000"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: paperless-data
+  labels:
+    app: paperless
+spec:
+  storageClassName: managed-nfs-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi     
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:latest
+          ports:
+            - containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis  
+spec:
+  selector:
+    app: redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+---      
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: paperless-media
+  labels:
+    app: paperless
+spec:
+  storageClassName: managed-nfs-storage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi          
+---
+apiVersion: v1			  
+kind: Service
+metadata:
+  name: paperless
+spec:
+  ports:
+    - name: paperless
+      port: 8000    
+      targetPort: 8000  
+  selector:
+    app: paperless  		  
+  type: LoadBalancer
+  loadBalancerIP: 192.168.179.11        
