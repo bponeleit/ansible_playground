@@ -1,18 +1,28 @@
 ---
-- set_fact: paperless_pw="{{ lookup('env', 'paperless_pw') }}"
-- name: Copy Deployment file
-  copy:
-    src: templates/pngx.yml
-    dest: pngx.yml
+#- set_fact: paperless_pw="{{ lookup('env', 'paperless_pw') }}"
+#- name: Copy Deployment file
+#  copy:
+#    src: templates/pngx.yml
+#    dest: pngx.yml
 
-- name: Set paperless-ngx pw
-  replace:
-    path: pngx.yml
-    regexp: '<<PAPERLESS_PW>>'
-    replace: '{{ paperless_pw }}'
-  register: nfs_ip
+#- name: Set paperless-ngx pw
+  # replace:
+  #   path: pngx.yml
+  #   regexp: '<<PAPERLESS_PW>>'
+  #   replace: '{{ paperless_pw }}'
+  # register: paperless_pw
 
-- name: Create a Deployment by reading the definition from a local file
-  shell: kubectl apply -f pngx.yml >> pngx_setup.log
-  args:
-   creates: pngx_setup.log
+  - name: Create tika deployment
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('file', '/templates/tika.yml') | from_yaml_All }}"
+
+# - name: Create gotenberg deployment
+#   kubernetes.core.k8s:
+#     state: present
+#     definition: "{{ lookup('file', '/templates/gotenberg.yml') | from_yaml_All }}"    
+
+#- name: Create a Deployment by reading the definition from a local file
+#  shell: kubectl apply -f pngx.yml >> pngx_setup.log
+#  args:
+#   creates: pngx_setup.log
