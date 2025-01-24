@@ -15,6 +15,7 @@ spec:
     spec:
       containers:
         - name: home-assistant
+          imagePullPolicy: Always
           image: ghcr.io/home-assistant/home-assistant:stable
           ports:
             - containerPort: 8123
@@ -23,7 +24,7 @@ spec:
               mountPath: /config
           env:
             - name: TZ
-              value: Europe/London
+              value: Europe/Berlin
 
       volumes:
         - name: home-assistant-storage
@@ -51,7 +52,7 @@ metadata:
 spec:
   ports:
     - name: home-assistant
-      port: 8123    
+      port: 80    
       targetPort: 8123  
   selector:
     app: home-assistant  		  
