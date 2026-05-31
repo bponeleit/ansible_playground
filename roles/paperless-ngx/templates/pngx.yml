@@ -85,7 +85,7 @@ metadata:
   labels:
     app: paperless
 spec:
-  storageClassName: managed-nfs-storage
+  storageClassName: zfs-hci
   accessModes:
     - ReadWriteOnce
   resources:
@@ -131,7 +131,7 @@ metadata:
   labels:
     app: paperless
 spec:
-  storageClassName: managed-nfs-storage
+  storageClassName: zfs-hci
   accessModes:
     - ReadWriteOnce
   resources:

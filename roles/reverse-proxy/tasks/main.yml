@@ -1,0 +1,4 @@
+  - name: Create NGINX
+    kubernetes.core.k8s:
+      state: present
+      definition: "{{ lookup('file', '../templates/nginx-ingress-controller.yml') | from_yaml_All }}"

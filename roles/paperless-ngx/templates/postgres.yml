@@ -16,7 +16,7 @@ metadata:
   labels:
     app: postgres
 spec:
-  storageClassName: managed-nfs-storage
+  storageClassName: zfs-hci
   accessModes:
     - ReadWriteMany
   resources:

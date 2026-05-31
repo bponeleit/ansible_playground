@@ -28,7 +28,7 @@ spec:
       - metadata:
             name: sftp-data
         spec:
-            storageClassName: managed-nfs-storage
+            storageClassName: zfs-hci
             accessModes:
               - ReadWriteMany
             dataSource: 
@@ -37,7 +37,7 @@ spec:
       - metadata:
             name: ocrmypdf-auto-config
         spec:
-            storageClassName: managed-nfs-storage
+            storageClassName: zfs-hci
             accessModes:
               - ReadWriteOnce
             resources:

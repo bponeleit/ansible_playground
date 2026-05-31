@@ -29,7 +29,7 @@ spec:
       - metadata:
             name: data
         spec:
-            storageClassName: managed-nfs-storage
+            storageClassName: zfs-hci
             accessModes:
               - ReadWriteOnce
             resources:
