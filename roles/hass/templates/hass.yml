@@ -19,12 +19,14 @@ spec:
           image: ghcr.io/home-assistant/home-assistant:stable
           ports:
             - containerPort: 8123
+            - containerPort: 1400 #sonos
+            - containerPort: 21064 #home assistant
           volumeMounts:
             - name: home-assistant-storage
               mountPath: /config
           env:
             - name: TZ
-              value: Europe/Berlin
+              value: Europe/London
 
       volumes:
         - name: home-assistant-storage
@@ -38,23 +40,29 @@ metadata:
   labels:
     app: home-assistant
 spec:
-  storageClassName: managed-nfs-storage
+  storageClassName: zfs-hci
   accessModes:
     - ReadWriteMany
   resources:
     requests:
-      storage: 10Gi            
+      storage: 50Gi
 ---
-apiVersion: v1			  
+apiVersion: v1
 kind: Service
 metadata:
   name: home-assistant
 spec:
   ports:
     - name: home-assistant
-      port: 80    
-      targetPort: 8123  
+      port: 80
+      targetPort: 8123
+    - name: home-assistant-sonos
+      port: 1400
+      targetPort: 1400
+    - name: home-assistant-
+      port: 21064
+      targetPort: 21064      
   selector:
-    app: home-assistant  		  
+    app: home-assistant
   type: LoadBalancer
   loadBalancerIP: 192.168.179.10

@@ -1619,6 +1619,7 @@ spec:
         - mountPath: /tmp/k8s-webhook-server/serving-certs
           name: cert
           readOnly: true
+      nodeName: gallifrey.fritz.box
       nodeSelector:
         kubernetes.io/os: linux
       securityContext:
@@ -1881,7 +1882,7 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-  - 192.168.179.0/22
+  - 192.168.176.0/22
 ---
 apiVersion: metallb.io/v1beta1
 kind: L2Advertisement

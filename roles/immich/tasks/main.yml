@@ -1,0 +1,10 @@
+---
+- name: Copy Deployment file
+  copy:
+    src: templates/immich.yml
+    dest: immich.yml
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f immich.yml >> immich_setup.log
+  args:
+   creates: immich_setup.log

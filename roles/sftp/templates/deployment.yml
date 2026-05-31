@@ -44,12 +44,12 @@ metadata:
   labels:
     app: sftp
 spec:
-  storageClassName: managed-nfs-storage
+  storageClassName: zfs-hci-shared # Use the SC we defined earlier
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce # This works for multiple pods on one node!
   resources:
     requests:
-      storage: 100Gi
+      storage: 100Gi      
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -58,12 +58,12 @@ metadata:
   labels:
     app: sftp
 spec:
-  storageClassName: managed-nfs-storage
+  storageClassName: zfs-hci
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi      
+      storage: 100Mi      
 ---
 apiVersion: v1
 kind: Service

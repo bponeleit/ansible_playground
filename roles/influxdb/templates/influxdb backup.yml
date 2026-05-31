@@ -1,0 +1,111 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: influx-backup  
+spec:
+  ttlSecondsAfterFinished: 0
+  template:
+    spec:
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: influx-data
+      - name: backup
+        persistentVolumeClaim:
+          claimName: influx-backup        
+      containers:
+      - name: influx-backup
+        image: influxdb:2.7
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/sh
+        - -c
+        - date; echo Hello from the Kubernetes cluster
+        volumeMounts:
+          - mountPath: /var/lib/influxdb2
+            name: data
+        volumeMounts:
+          - mountPath: /tmp/backup
+            name: backup
+  restartPolicy: Never
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: influx-backup
+  labels:
+    app: influx-backup
+spec:
+  storageClassName: zfs-hci
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: influx-data
+  labels:
+    app: influx-backup
+spec:
+  storageClassName: zfs-hci
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi      
+
+
+
+
+
+kind: Job
+metadata:
+  name: influx-backup
+spec:
+  template:
+    metadata:
+      name: influx-backup
+      labels:
+        task: influx-backup
+    spec:
+      volumes:
+      - name: influx
+        persistentVolumeClaim:
+          claimName: influxdb
+      - name: backup
+        persistentVolumeClaim:
+          claimName: influx-backup
+      containers:
+        - name: influx
+          image: influxdb:2.7
+          command: ["/bin/sh"]
+          args: ["-c", "influxd backup -h http://influxdb.local:8086/ /tmp/backup/backup_$(date '+%Y-%m-%d_%H-%M') -t fJB5C7BtlKx0GSPOGOXBy0AvWHylpFBLe2fE2nR0Z4RbPP8KwcmcG8LmKDSSNDyV_4jSulXwYhDZ7ifkbTAqpQ=="]
+          volumeMounts:
+            - mountPath: /var/lib/influxdb2
+              name: data
+          volumeMounts:
+            - mountPath: /tmp/backup
+              name: backup
+      restartPolicy: Never
+    volumeClaimTemplates:
+      - metadata:
+            name: data
+        spec:
+            storageClassName: zfs-hci
+            accessModes:
+              - ReadWriteOnce
+            resources:
+                requests:
+                    storage: 10Gi
+      - metadata:
+            name: backup
+        spec:
+            storageClassName: zfs-hci
+            accessModes:
+              - ReadWriteOnce
+            resources:
+                requests:
+                    storage: 10Gi        

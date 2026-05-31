@@ -60,7 +60,7 @@
     - misc-openhabcloud
     - binding-playstation
     - binding-mqtt
-    - transformation-javascript
+    #- transformation-javascript
 
 - name: Get things
   uri: 
@@ -75,7 +75,7 @@
 - name: Get systeminfo
   set_fact: openhab_systeminfo_thing="{{ openhab_initial_things.json | json_query(jmesquery) | first }}"
   vars: 
-    jmesquery: "[? thingTypeUID==`systeminfo:computer`].UID"
+    jmesquery: "[? thingTypeUID==`systeminfo:computer-openhab-0`].UID"
   when: openhab_initial_things.json is defined and (openhab_initial_things.json|length > 0)
 
 - name: Discover systeminfo
@@ -102,7 +102,7 @@
 
 - name: Get new Thing
   set_fact:
-    openhab_systeminfo_thing: "{{ openhab_systeminfo_inbox.json | json_query('[? thingTypeUID==`systeminfo:computer`].thingUID') | first }}"
+    openhab_systeminfo_thing: "{{ openhab_systeminfo_inbox.json | json_query('[? thingTypeUID==`systeminfo:computer-openhab-0`].thingUID') | first }}"
   when: openhab_systeminfo_result is not skipped
 
 - name: Approve systeminfo
@@ -185,8 +185,8 @@
   template: 
     src: homematic.j2 
     dest: "{{ physical_path }}{{ path }}/rules/homematic.rules" 
-    owner: 9001 
-    group: 9001
+    owner: '9001'
+    group: '9001'
   register: homematic_rules
 
 - name: Read Inbox Things
@@ -276,6 +276,7 @@
     - '{ "type": "Group", "name": "Garden", "groupNames": [ "Outdoor" ], "label": "Garten", "tags": [ "Garden" ], "category": "garden"}'
     - '{ "type": "Group", "name": "Carport", "groupNames": [ "Outdoor" ], "label": "Carport", "tags": [ "Carport" ], "category": "garage_detached"}'
     - '{ "type": "Group", "name": "BasementBathroom", "groupNames": [ "Basement" ], "label": "Keller Bad", "tags": [ "Bathroom" ], "category": "bath"}'
+    - '{ "type": "Group", "name": "LivingRoom", "groupNames": [ "GroundFloor" ], "label": "Wohnzimmer", "tags": [ "LivingRoom" ], "category": "sofa"}'
     - '{ "type": "Group", "name": "HMESPMSw1PlPEQ0412823", "groupNames": [ "BasementBathroom" ], "label": "Waschmaschine", "tags": [ "PowerOutlet" ], "category": "washingmachine"}'
   register: openhab_groups
   ignore_errors: true
@@ -367,6 +368,177 @@
     return_content: true
   when: ( openhab_telegram | length == 0 )
   register: openhab_telegram_bot
+
+- name: Get mqtt Broker
+  set_fact: 
+    openhab_mqtt_broker: "{{ openhab_telegram_things.json | json_query('[? label == `MQTT Broker`]') }}"      
+
+- name: Create MQTT Thing
+  uri: 
+    url: "http://192.168.179.2:8080/rest/things"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    body_format: "json"
+    body: '{
+    "channels": [],
+    "statusInfo": {
+      "status": "ONLINE",
+      "statusDetail": "NONE"
+    },
+    "editable": true,
+    "label": "MQTT Broker",
+    "configuration": { "host": "EMQX" },
+    "properties": {},
+    "UID": "mqtt:broker:EMQX",
+    "thingTypeUID": "mqtt:broker"
+  }'
+    status_code: 201
+    return_content: true
+  when: ( openhab_mqtt_broker | length == 0 )
+  register: openhab_mqtt_broker
+
+
+- name: Get mqtt Thing
+  set_fact: 
+    openhab_mqtt_thing: "{{ openhab_telegram_things.json | json_query('[? label == `Generic MQTT Thing`]') }}"      
+  
+- name: Create MQTT Thing
+  uri: 
+    url: "http://192.168.179.2:8080/rest/things"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    body_format: "json"
+    body: "{ 'UID': 'mqtt:topic:EMQX:MQTT_Thing', 'label': 'Generic MQTT Thing', 'thingTypeUID': 'mqtt:topic', 'configuration': {}, 'bridgeUID': 'mqtt:broker:EMQX' }"
+    status_code: 201
+    return_content: true
+  when: ( openhab_mqtt_thing | length == 0 )
+  register: openhab_mqtt_thing      
+
+- name: Add Channels to MQTT Thing
+  uri: 
+    url: "http://192.168.179.2:8080/rest/things/{{ 'mqtt:topic:EMQX:MQTT_Thing' | urlencode }}"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    body_format: "json"
+    body: "{ 'channels': {{ lookup('file', 'MQTT_Channels.json') }},'UID': 'mqtt:topic:EMQX:MQTT_Thing', 'label': 'Generic MQTT Thing', 'thingTypeUID': 'mqtt:topic', 'configuration': {}, 'bridgeUID': 'mqtt:broker:EMQX' }"
+    status_code: 200
+    return_content: true
+  when: ( openhab_mqtt_thing | length > 0 )
+  register: openhab_mqtt_thing  
+
+- name: Create telegram items
+  uri: 
+    url: "http://192.168.179.2:8080/rest/items/{{ item | from_json | json_query('name') }}"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    body_format: "json"
+    body: "{{ item }}"
+    return_content: true
+    status_code: 201
+  with_items:    
+    - '{ "type": "String", "name": "Telegram_TestingBot_ChatId", "groupNames": [ ], "label": "Test ChatId", "tags": [ "Point" ]}'
+    - '{ "type": "String", "name": "Telegram_HomeAutomation_ChatId", "groupNames": [ ], "label": "ChatId", "tags": [ "Point" ]}'
+    - '{ "type": "String", "name": "Telegram_TestingBot_ReplyId", "groupNames": [ ], "label": "Test ReplyId", "tags": [ "Point" ]}'
+    - '{ "type": "String", "name": "Telegram_HomeAutomation_ReplyId", "groupNames": [ ], "label": "ReplyId", "tags": [ "Point" ]}'
+    - '{ "type": "DateTime", "name": "Telegram_TestingBot_LastMessageDate", "groupNames": [ ], "label": "Test Last Message Date", "tags": [ "Point" ]}'
+    - '{ "type": "DateTime", "name": "Telegram_HomeAutomation_LastMessageDate", "groupNames": [ ], "label": "Last Message Date", "tags": [ "Point" ]}'  
+    - '{ "type": "String", "name": "Telegram_TestingBot_LastMessageText", "groupNames": [ ], "label": "Test Last Message Text", "tags": [ "Point" ]}'
+    - '{ "type": "String", "name": "Telegram_HomeAutomation_LastMessageText", "groupNames": [ ], "label": "Last Message Text", "tags": [ "Point" ]}'      
+  register: openhab_telegram_items
+  ignore_errors: true
+
+- name: Create link for telegram
+  uri: 
+    url: "http://192.168.179.2:8080/rest/links/{{ item | from_json | json_query('itemName') }}/{{ item | from_json | json_query('channelUID') | urlencode }}"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    status_code: 200
+    body_format: "json"
+    body: "{{ item }}"
+    return_content: true
+  with_items:
+    - '{ "itemName": "Telegram_TestingBot_ChatId", "channelUID": "telegram:telegramBot:test:chatId" }'
+    - '{ "itemName": "Telegram_HomeAutomation_ChatId", "channelUID": "telegram:telegramBot:homeautomation:chatId" }'
+    - '{ "itemName": "Telegram_TestingBot_ReplyId", "channelUID": "telegram:telegramBot:test:replyId" }'
+    - '{ "itemName": "Telegram_HomeAutomation_ReplyId", "channelUID": "telegram:telegramBot:homeautomation:replyId" }'
+    - '{ "itemName": "Telegram_TestingBot_LastMessageDate", "channelUID": "telegram:telegramBot:test:lastMessageDate" }'
+    - '{ "itemName": "Telegram_HomeAutomation_LastMessageDate", "channelUID": "telegram:telegramBot:homeautomation:lastMessageDate" }'
+    - '{ "itemName": "Telegram_TestingBot_LastMessageText", "channelUID": "telegram:telegramBot:test:lastMessageText" }'
+    - '{ "itemName": "Telegram_HomeAutomation_LastMessageText", "channelUID": "telegram:telegramBot:homeautomation:lastMessageText" }'    
+  register: openhab_telegram_link 
+  ignore_errors: True  
+
+- name: Create tasmota items
+  uri: 
+    url: "http://192.168.179.2:8080/rest/items/{{ item | from_json | json_query('name') }}"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    body_format: "json"
+    body: "{{ item }}"
+    return_content: true
+    status_code: 201
+  with_items:    
+    - '{ "type": "Switch", "name": "Playstation_Power", "groupNames": [ "LivingRoom" ], "label": "Playstation Power", "tags": [ "Status" ], "category": "poweroutlet"}'
+    - '{ "type": "Number:Energy", "name": "HMESPMSw1PlPEQ0412823_EnergyCounter", "groupNames": [ "HMESPMSw1PlPEQ0412823" ], "label": "KG_Bad_Waschmaschine_EnergyCounter", "tags": [ "Point" ], "category": "Energy"}'
+  register: openhab_tasmota_items
+  ignore_errors: true  
+
+- name: Create link for MQTT items
+  uri: 
+    url: "http://192.168.179.2:8080/rest/links/{{ item | from_json | json_query('itemName') }}/{{ item | from_json | json_query('channelUID') | urlencode }}"
+    method: PUT
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    status_code: 200
+    body_format: "json"
+    body: "{{ item }}"
+    return_content: true
+  with_items:
+    - '{ "itemName": "Playstation", "channelUID": "mqtt:topic:EMQX:MQTT_Thing:ps4_3122" }' 
+    - '{ "itemName": "HMESPMSw1PlPEQ0412823_EnergyCounter", "channelUID": "mqtt:topic:EMQX:MQTT_Thing:KG_Bad_Waschmaschine_EnergyCounter" }' 
+  register: openhab_mqtt_link 
+  ignore_errors: True    
+
+- name: Create telegram commands rule
+  uri: 
+    url: "http://192.168.179.2:8080/rest/rules"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    status_code: 201
+    body_format: "json"
+    body: "{{ lookup('file', 'telegram_testing_command.json') }}"
+    return_content: true
+  register: openhab_telegram_testing_commands_rule
+  ignore_errors: True
+
+- name: Create telegram answers rule
+  uri: 
+    url: "http://192.168.179.2:8080/rest/rules"
+    method: POST
+    headers:
+      Authorization: "Bearer {{ api_token }}"
+      Accept: "application/json"
+    status_code: 201
+    body_format: "json"
+    body: "{{ lookup('file', 'telegram_testing_answer.json') }}"
+    return_content: true
+  register: openhab_telegram_testing_answer_rule
+  ignore_errors: True  
 
 # - name: Get things
 #   uri: 

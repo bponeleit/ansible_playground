@@ -1,0 +1,30 @@
+---
+- name: Copy Deployment file
+  copy:
+    src: templates/openebs.yml
+    dest: openebs.yml
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f openebs.yml >> openebs_setup.log
+  args:
+   creates: openebs_setup.log
+
+- name: Create a dataset for kubernetes openebs
+  community.general.zfs:
+    name: rpool/k8s-data
+    state: present
+    extra_zfs_properties:
+      setuid: 'off'
+      devices: 'off'
+      atime: 'off'
+      xattr: 'sa'      
+
+- name: Copy Deployment file
+  copy:
+    src: templates/zfs-hci-sc.yml
+    dest: zfs-hci-sc.yml
+
+- name: Create a StorageClasses by reading the definition from a local file
+  shell: kubectl apply -f zfs-hci-sc.yml >> zfs-hci-sc.log
+  args:
+   creates: zfs-hci-sc.log    

@@ -3,25 +3,25 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
     labels:
-        app: influxdb
-    name: influxdb
+        app: influx-restore
+    name: influx-restore
 spec:
     replicas: 1
     selector:
         matchLabels:
-            app: influxdb
-    serviceName: influxdb
+            app: influx-restore
+    servicename: influx-restore
     template:
         metadata:
             labels:
-                app: influxdb
+                app: influx-restore
         spec:
             containers:
               - image: influxdb:2.7
-                name: influxdb
+                name: influx-restore
                 ports:
                   - containerPort: 8086
-                    name: influxdb
+                    name: influx-restore
                 volumeMounts:
                   - mountPath: /var/lib/influxdb2
                     name: data
@@ -47,17 +47,3 @@ spec:
             resources:
                 requests:
                     storage: 10Gi                    
----
-apiVersion: v1
-kind: Service
-metadata:
-    name: influxdb
-spec:
-    ports:
-      - name: influxdb
-        port: 8086
-        targetPort: 8086
-    selector:
-        app: influxdb
-    type: LoadBalancer
-    loadBalancerIP: 192.168.179.7

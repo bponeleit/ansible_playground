@@ -50,7 +50,7 @@ spec:
       - metadata:
             name: openhab-addons
         spec:
-            storageClassName: managed-nfs-storage
+            storageClassName: zfs-hci
             accessModes:
               - ReadWriteOnce
             resources:
@@ -59,7 +59,7 @@ spec:
       - metadata:
             name: openhab-conf
         spec:
-            storageClassName: managed-nfs-storage
+            storageClassName: zfs-hci
             accessModes:
               - ReadWriteOnce
             resources:
@@ -68,7 +68,7 @@ spec:
       - metadata:
             name: openhab-userdata
         spec:
-            storageClassName: managed-nfs-storage
+            storageClassName: zfs-hci
             accessModes:
               - ReadWriteOnce
             resources:

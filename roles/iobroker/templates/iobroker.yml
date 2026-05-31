@@ -29,12 +29,12 @@ spec:
       - metadata:
             name: data
         spec:
-            storageClassName: managed-nfs-storage
+            storageClassName: zfs-hci
             accessModes:
               - ReadWriteOnce
             resources:
                 requests:
-                    storage: 100Mi
+                    storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
