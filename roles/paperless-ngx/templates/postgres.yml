@@ -39,10 +39,24 @@ spec:
       labels:
         app: postgres
     spec:
+      hostUsers: false
+      securityContext:
+        - runAsUser: 0
+          runAsGroup: 1009
+          fsGroup: 1009
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
             claimName: postgres-data
+      initContainers:
+        - name: fix-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown -R :1009 /var/lib/postgresql/data"]
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+           - mountPath: /var/lib/postgresql/data
+             name: postgres-data              
       containers:
         - name: postgres
           image: postgres:17

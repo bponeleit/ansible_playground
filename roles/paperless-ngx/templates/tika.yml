@@ -15,12 +15,7 @@ spec:
       labels:
         app: tika
     spec:
-      securityContext:
-        - readOnlyRootFilesystem: false
-          allowPrivilegeEscalation: false
-          privileged: false
-          runAsUser: 1001
-      containers:
+      containers:        
         - name: tika
           image: docker.io/apache/tika:latest
           imagePullPolicy: IfNotPresent
@@ -36,6 +31,19 @@ spec:
             httpGet:
               path: /
               port: http
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true     # Upgraded for v1.36 hardening
+            runAsNonRoot: true               # Upgraded for v1.36 hardening
+            runAsUser: 1001
+            seccompProfile:                  # Upgraded for v1.36 hardening
+              type: RuntimeDefault
+            appArmorProfile:                 # Upgraded for v1.36 hardening
+              type: RuntimeDefault
+            capabilities:                    # Upgraded for v1.36 hardening
+              drop:
+                - ALL              
 ---
 apiVersion: v1
 kind: Service

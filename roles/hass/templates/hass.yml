@@ -13,6 +13,20 @@ spec:
       labels:
         app: home-assistant
     spec:
+      hostUsers: false
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 1010
+        fsGroup: 1010
+      initContainers:
+        - name: fix-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown -R 1010:1010 /config"]
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: /config
+              name: home-assistant-storage        
       containers:
         - name: home-assistant
           imagePullPolicy: Always
@@ -26,8 +40,7 @@ spec:
               mountPath: /config
           env:
             - name: TZ
-              value: Europe/London
-
+              value: Europe/Berlin
       volumes:
         - name: home-assistant-storage
           persistentVolumeClaim:
@@ -59,7 +72,7 @@ spec:
     - name: home-assistant-sonos
       port: 1400
       targetPort: 1400
-    - name: home-assistant-
+    - name: home-assistant-homekit
       port: 21064
       targetPort: 21064      
   selector:

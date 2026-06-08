@@ -25,7 +25,25 @@ spec:
         - name: paperless-consume
           persistentVolumeClaim:
             claimName: sftp-data
-      containers:
+      hostUsers: false
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 1011
+        fsGroup: 1011
+      initContainers:
+        - name: fix-permissions
+          image: busybox:latest
+          command: ["sh", "-c", "chown -R :1011 /data"]
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - mountPath: "/data/data"
+              name: paperless-data
+            - mountPath: "/data/media"
+              name: paperless-media
+            - mountPath: "/data/consume"
+              name: paperless-consume                 
+      containers:      
         - name: paperless
           image: ghcr.io/paperless-ngx/paperless-ngx:latest
           ports:
@@ -50,9 +68,7 @@ spec:
             - name: PAPERLESS_ADMIN_USER
               value: "root"
             - name: PAPERLESS_ADMIN_PASSWORD
-              value: "<<PAPERLESS_PW>>""
-#            - name: PAPERLESS_URL
-#%              value: "https://paperless.yourdomain.com"
+              value: "<<PAPERLESS_PW>>"
             - name: PAPERLESS_BIND_ADDR
               value: "0.0.0.0"
             - name: PAPERLESS_PORT
@@ -106,6 +122,7 @@ spec:
       labels:
         app: redis
     spec:
+      hostUsers: false
       containers:
         - name: redis
           image: redis:latest

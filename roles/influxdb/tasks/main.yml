@@ -9,5 +9,5 @@
   args:
    creates: influxdb_setup.log
 
-- name: Portforward to local host
-  shell: kubectl port-forward service/influxdb 9999:9999 &
+#- name: Portforward to local host
+#  shell: kubectl port-forward service/influxdb 9999:9999 &

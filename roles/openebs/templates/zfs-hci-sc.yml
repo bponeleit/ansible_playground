@@ -5,7 +5,7 @@ metadata:
   name: zfs-hci-shared
 provisioner: zfs.csi.openebs.io
 parameters:
-  poolname: "rpool/k8s-data"
+  poolname: "tank/k8s-data"
   fstype: "zfs"
   shared: "yes"         # <--- This enables the "RWX" behavior on one node
   compression: "lz4"    # Faster than zstd for HDDs (less CPU wait)
@@ -20,7 +20,7 @@ metadata:
   name: zfs-hci
 provisioner: zfs.csi.openebs.io
 parameters:
-  poolname: "rpool/k8s-data"
+  poolname: "tank/k8s-data"
   fstype: "zfs"
   compression: "lz4"      # Native LZ4 compression
   aclinherit: "passthrough"

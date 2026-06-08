@@ -16,6 +16,20 @@ spec:
             labels:
                 app: iobroker
         spec:
+            hostUsers: false
+            securityContext:
+              runAsUser: 0
+              runAsGroup: 1008
+              fsGroup: 1008
+            initContainers:
+             - name: fix-permissions
+               image: busybox:latest
+               command: ["sh", "-c", "chown -R 1008:1008 /opt/iobroker"]
+               securityContext:
+                 runAsUser: 0
+               volumeMounts:
+                - mountPath: /opt/iobroker
+                  name: data          
             containers:
               - image: buanet/iobroker:latest-v10
                 name: iobroker
@@ -43,7 +57,7 @@ metadata:
 spec:
     ports:
       - name: iobroker
-        port: 8081
+        port: 80
         targetPort: 8081
     selector:
         app: iobroker

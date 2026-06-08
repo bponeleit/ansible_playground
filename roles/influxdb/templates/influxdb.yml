@@ -16,6 +16,22 @@ spec:
             labels:
                 app: influxdb
         spec:
+            hostUsers: false
+            securityContext:
+              runAsUser: 0
+              runAsGroup: 1007
+              fsGroup: 1007   
+            initContainers:
+            - name: fix-permissions
+              image: busybox:latest
+              command: ["sh", "-c", "chown -R 1007:1007 /var/lib/influxdb2 /tmp/backup"]
+              securityContext:
+                runAsUser: 0
+              volumeMounts:
+                - mountPath: /var/lib/influxdb2
+                  name: data
+                - mountPath: /tmp/backup
+                  name: backup                   
             containers:
               - image: influxdb:2.7
                 name: influxdb
@@ -25,7 +41,6 @@ spec:
                 volumeMounts:
                   - mountPath: /var/lib/influxdb2
                     name: data
-                volumeMounts:
                   - mountPath: /tmp/backup
                     name: backup
     volumeClaimTemplates:
@@ -46,7 +61,7 @@ spec:
               - ReadWriteOnce
             resources:
                 requests:
-                    storage: 10Gi                    
+                    storage: 10Gi
 ---
 apiVersion: v1
 kind: Service

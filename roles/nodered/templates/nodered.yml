@@ -16,6 +16,20 @@ spec:
             labels:
                 app: nodered
         spec:
+            hostUsers: false
+            securityContext:
+              runAsUser: 0
+              runAsGroup: 1006
+              fsGroup: 1006
+            initContainers:
+             - name: fix-permissions
+               image: busybox:latest
+               command: ["sh", "-c", "chown -R 1006:1006 /data"]
+               securityContext:
+                 runAsUser: 0
+               volumeMounts:
+                 - mountPath: /data
+                   name: data         
             containers:
               - image: nodered/node-red
                 name: nodered

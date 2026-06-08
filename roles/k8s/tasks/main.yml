@@ -28,8 +28,8 @@
 - name: INCLUDE | install metallb
   include_tasks: metallb.yml
 
-- name: INCLUDE | create NFS share
-  include_tasks: nfs.yml
+#- name: INCLUDE | create NFS share
+#  include_tasks: nfs.yml
 
 - name: Copy Deployment file
   copy:
@@ -38,3 +38,11 @@
 
 - name: Create a Deployment by reading the definition from a local file
   shell: kubectl apply -f mdns.yml
+
+- name: Copy Deployment file
+  copy:
+    src: templates/ipaddresspool.yml
+    dest: ipaddresspool.yml
+
+- name: Create a Deployment by reading the definition from a local file
+  shell: kubectl apply -f ipaddresspool.yml  

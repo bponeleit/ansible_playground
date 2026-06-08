@@ -2,50 +2,62 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-    labels:
-        app: grafana
-    name: grafana
+  labels:
+    app: grafana
+  name: grafana
 spec:
-    replicas: 1
-    selector:
-        matchLabels:
-            app: grafana
-    serviceName: grafana
-    template:
-        metadata:
-            labels:
-                app: grafana
-        spec:
-            containers:
-              - image: grafana/grafana
-                name: grafana
-                ports:
-                  - containerPort: 3000
-                    name: grafana
-                volumeMounts:
-                  - mountPath: /var/lib/grafana
-                    name: data
-    volumeClaimTemplates:
-      - metadata:
-            name: data
-        spec:
-            storageClassName: zfs-hci
-            accessModes:
-              - ReadWriteOnce
-            resources:
-                requests:
-                    storage: 100Mi
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  serviceName: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      securityContext:
+        runAsUser: 472
+      initContainers:
+      - name: fix-permissions
+        image: busybox:latest
+        command: ["sh", "-c", "chown -R 472:472 /var/lib/grafana"]
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - mountPath: /var/lib/grafana
+          name: data
+      containers:
+      - image: grafana/grafana
+        name: grafana
+        ports:
+        - containerPort: 3000
+          name: grafana
+        volumeMounts:
+        - mountPath: /var/lib/grafana
+          name: data
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      storageClassName: zfs-hci
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 100Mi
 ---
 apiVersion: v1
 kind: Service
 metadata:
-    name: grafana
+  name: grafana
+  annotations:
+    # ⚠️ Use this annotation instead of the spec field
+    metallb.io/loadBalancerIPs: 192.168.179.100 # Put your desired IP here
 spec:
-    ports:
-      - name: grafana
-        port: 3000
-        targetPort: 3000
-    selector:
-        app: grafana
-    type: LoadBalancer
-    loadBalancerIP: 192.168.179.1
+  type: LoadBalancer
+  selector:
+    app: grafana
+  ports:
+    - port: 80
+      targetPort: 3000

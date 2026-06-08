@@ -6,7 +6,7 @@ metadata:
     app: gotenberg
 spec:  
   replicas: 1
-  progressDeadlineSeconds: 120
+  progressDeadlineSeconds: 180
   selector:
     matchLabels:
       app: gotenberg
@@ -18,7 +18,7 @@ spec:
       containers:
         - name: gotenberg
           image: gotenberg/gotenberg:8
-          imagePullPolicy: gotenberg/gotenberg:8
+          imagePullPolicy: IfNotPresent
           args:
           - gotenberg
           - --api-port=3000      
